@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { freeChallenges } from './challenges';
+import { getCompletedChallenges, saveCompletedChallenges } from './challengeUtils';
 
 const methodSteps = [
   ['01', 'Understand', 'Clarify the problem before touching code.'],
@@ -14,8 +15,26 @@ const methodSteps = [
 
 function App() {
   const [selected, setSelected] = useState(null);
+  const [completed, setCompleted] = useState(getCompletedChallenges);
+  const [revealed, setRevealed] = useState({});
 
   const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+
+  const toggleComplete = (id) => {
+    const next = completed.includes(id)
+      ? completed.filter((challengeId) => challengeId !== id)
+      : [...completed, id];
+
+    setCompleted(next);
+    saveCompletedChallenges(next);
+  };
+
+  const toggleSolution = (id) => {
+    setRevealed((current) => ({ ...current, [id]: !current[id] }));
+  };
+
+  const completedCount = completed.length;
+  const progressPercent = Math.round((completedCount / freeChallenges.length) * 100);
 
   return (
     <main>
@@ -98,32 +117,71 @@ function App() {
               <h2>10 problems designed to expose weak problem-solving habits.</h2>
               <p>No giant textbook. No 47-hour lecture marathon. Solve, think, test, improve.</p>
             </div>
-            <div className="progress-card">
-              <strong>{freeChallenges.length}</strong>
-              <span>free challenges</span>
+            <div className="progress-card" aria-label={`${completedCount} of ${freeChallenges.length} challenges completed`}>
+              <strong>{completedCount}/{freeChallenges.length}</strong>
+              <span>challenges completed</span>
+              <div className="progress-track" aria-hidden="true">
+                <div className="progress-fill" style={{ width: `${progressPercent}%` }} />
+              </div>
+              <small>{progressPercent}% progress · saved on this device</small>
             </div>
           </div>
 
           <div className="challenge-list">
-            {freeChallenges.map((challenge) => (
-              <article className={`challenge ${selected === challenge.id ? 'active' : ''}`} key={challenge.id}>
-                <button className="challenge-main" onClick={() => setSelected(selected === challenge.id ? null : challenge.id)}>
-                  <span className="challenge-number">{String(challenge.id).padStart(2, '0')}</span>
-                  <span className="challenge-info">
-                    <strong>{challenge.title}</strong>
-                    <small>{challenge.skill} · {challenge.difficulty}</small>
-                  </span>
-                  <span className="chevron">{selected === challenge.id ? '−' : '+'}</span>
-                </button>
-                {selected === challenge.id && (
-                  <div className="challenge-detail">
-                    <p>{challenge.prompt}</p>
-                    <code>{challenge.example}</code>
-                    <div><b>Hint:</b> {challenge.hint}</div>
-                  </div>
-                )}
-              </article>
-            ))}
+            {freeChallenges.map((challenge) => {
+              const isCompleted = completed.includes(challenge.id);
+              const isRevealed = revealed[challenge.id];
+
+              return (
+                <article className={`challenge ${selected === challenge.id ? 'active' : ''} ${isCompleted ? 'completed' : ''}`} key={challenge.id}>
+                  <button className="challenge-main" onClick={() => setSelected(selected === challenge.id ? null : challenge.id)} aria-expanded={selected === challenge.id}>
+                    <span className="challenge-number">{String(challenge.id).padStart(2, '0')}</span>
+                    <span className="challenge-info">
+                      <strong>{challenge.title}</strong>
+                      <small>{challenge.skill} · {challenge.difficulty}</small>
+                    </span>
+                    <span className="completion-state" aria-label={isCompleted ? 'Completed' : 'Not completed'}>{isCompleted ? '✓' : '○'}</span>
+                    <span className="chevron">{selected === challenge.id ? '−' : '+'}</span>
+                  </button>
+
+                  {selected === challenge.id && (
+                    <div className="challenge-detail">
+                      <p><b>Problem:</b> {challenge.prompt}</p>
+                      <code>{challenge.example}</code>
+
+                      <div className="hint-box"><b>Hint:</b> {challenge.hint}</div>
+
+                      <div className="challenge-actions">
+                        <button className="button secondary" onClick={() => toggleSolution(challenge.id)}>
+                          {isRevealed ? 'Hide solution' : 'Show solution'}
+                        </button>
+                        <button className="button primary" onClick={() => toggleComplete(challenge.id)}>
+                          {isCompleted ? 'Mark incomplete' : 'Mark complete'}
+                        </button>
+                      </div>
+
+                      {isRevealed && (
+                        <div className="solution-panel">
+                          <div className="solution-block">
+                            <b>Pseudocode</b>
+                            <ol>{challenge.pseudocode.map((step) => <li key={step}>{step}</li>)}</ol>
+                          </div>
+                          <div className="solution-block">
+                            <b>JavaScript solution</b>
+                            <pre><code>{challenge.solution}</code></pre>
+                          </div>
+                          <div className="solution-block">
+                            <b>Tests</b>
+                            <ul>{challenge.tests.map((test) => <li key={test}><code>{test}</code></li>)}</ul>
+                          </div>
+                          <div className="complexity"><b>Complexity:</b> {challenge.complexity}</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -131,9 +189,15 @@ function App() {
       <section className="cta-section shell">
         <div className="cta-card">
           <div className="section-label">THE GOAL</div>
-          <h2>From “I don't know how to start” to “I know exactly what to do next.”</h2>
-          <p>DevSprint is being built around practice, feedback, and measurable progress, not content for content's sake.</p>
-          <button className="button primary" onClick={() => scrollTo('free')}>Begin with Challenge 01</button>
+          <h2>{completedCount === freeChallenges.length ? 'You finished the starter pack.' : 'From “I don\'t know how to start” to “I know exactly what to do next.”'}</h2>
+          <p>
+            {completedCount === freeChallenges.length
+              ? 'You now have a complete beginner practice loop: understand, design, implement, test, and analyze.'
+              : 'DevSprint is being built around practice, feedback, and measurable progress, not content for content\'s sake.'}
+          </p>
+          <button className="button primary" onClick={() => scrollTo('free')}>
+            {completedCount === freeChallenges.length ? 'Review the challenges' : 'Begin with Challenge 01'}
+          </button>
         </div>
       </section>
 
