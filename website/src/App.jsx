@@ -1,31 +1,45 @@
-const challenges = [
-  'Find the largest number without sorting',
-  'Count even numbers in an array',
-  'Reverse a string without built-in reverse',
+import { useState } from 'react';
+import { freeChallenges } from './challenges';
+
+const methodSteps = [
+  ['01', 'Understand', 'Clarify the problem before touching code.'],
+  ['02', 'Break down', 'Separate the task into smaller decisions.'],
+  ['03', 'Design', 'Choose an algorithm and data structure.'],
+  ['04', 'Pseudocode', 'Describe the solution in plain logic.'],
+  ['05', 'Implement', 'Translate the plan into JavaScript.'],
+  ['06', 'Test + debug', 'Attack normal cases and edge cases.'],
+  ['07', 'Analyze', 'Measure time and space complexity.'],
+  ['08', 'Improve', 'Find a cleaner or faster approach.'],
 ];
 
 function App() {
+  const [selected, setSelected] = useState(null);
+
+  const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+
   return (
     <main>
       <nav className="nav shell">
-        <div className="brand"><span className="brand-mark">D</span> DevSprint</div>
+        <button className="brand brand-button" onClick={() => scrollTo('top')} aria-label="Go to top">
+          <span className="brand-mark">D</span> DevSprint
+        </button>
         <div className="nav-links">
-          <a href="#method">Method</a>
-          <a href="#product">Toolkit</a>
-          <a href="#free">Free challenges</a>
+          <button onClick={() => scrollTo('method')}>Method</button>
+          <button onClick={() => scrollTo('product')}>Toolkit</button>
+          <button onClick={() => scrollTo('free')}>Free challenges</button>
         </div>
       </nav>
 
-      <section className="hero shell">
+      <section id="top" className="hero shell">
         <div className="eyebrow">PRACTICAL DEVELOPER EDUCATION</div>
         <h1>Stop memorizing code.<br /><span>Start solving problems.</span></h1>
         <p className="hero-copy">
-          DevSprint teaches you how to turn an unfamiliar programming problem into a clear algorithm,
-          working JavaScript, reliable tests, and an explanation you actually understand.
+          DevSprint teaches you how to turn unfamiliar programming problems into clear algorithms,
+          working JavaScript, reliable tests, and solutions you can explain.
         </p>
         <div className="actions">
-          <a className="button primary" href="#free">Get 10 free challenges</a>
-          <a className="button secondary" href="#product">See the toolkit</a>
+          <button className="button primary" onClick={() => scrollTo('free')}>Start 10 free challenges</button>
+          <button className="button secondary" onClick={() => scrollTo('product')}>Explore the toolkit</button>
         </div>
         <div className="proof-row">
           <span>✓ Problem-solving first</span>
@@ -39,8 +53,12 @@ function App() {
           <div className="section-label">THE DEVSPRINT METHOD</div>
           <h2>A repeatable system, not another pile of tutorials.</h2>
           <div className="method-grid">
-            {['Understand', 'Break down', 'Design algorithm', 'Pseudocode', 'Implement', 'Test + debug', 'Analyze', 'Improve'].map((step, i) => (
-              <div className="step" key={step}><b>{String(i + 1).padStart(2, '0')}</b><span>{step}</span></div>
+            {methodSteps.map(([number, title, description]) => (
+              <article className="step" key={number}>
+                <b>{number}</b>
+                <strong>{title}</strong>
+                <p>{description}</p>
+              </article>
             ))}
           </div>
         </div>
@@ -52,33 +70,70 @@ function App() {
           <div>
             <span className="tag">COMING FIRST</span>
             <h2>JavaScript Problem-Solving &amp; DSA Toolkit</h2>
-            <p>60 original, structured problems covering arrays, strings, searching, sorting, data structures, complexity, debugging, and practical assessment.</p>
+            <p>
+              A focused practice system with 60 original problems covering arrays, strings, searching,
+              sorting, data structures, complexity, debugging, and practical assessment.
+            </p>
             <ul>
-              <li>Every problem follows the same thinking framework</li>
+              <li>Every problem uses the same thinking framework</li>
               <li>Hints → pseudocode → solution → tests → edge cases</li>
+              <li>Debugging lab and assessment simulator</li>
               <li>Final project: Student Performance Analyzer</li>
             </ul>
           </div>
-          <div className="price-box">
+          <aside className="price-box">
             <span>Launch target</span>
             <strong>$9–19</strong>
-            <small>pricing will be validated with real buyers</small>
-            <a className="button primary" href="#free">Start with free challenges</a>
-          </div>
+            <small>Price will be validated with real buyers.</small>
+            <button className="button primary" onClick={() => scrollTo('free')}>Try the free pack</button>
+          </aside>
         </div>
       </section>
 
       <section id="free" className="free-section">
-        <div className="shell free-grid">
-          <div>
-            <div className="section-label">FREE STARTER</div>
-            <h2>10 problems designed to expose weak problem-solving habits.</h2>
-            <p>No giant textbook. No 47-hour lecture marathon. Just problems, thinking, and feedback.</p>
+        <div className="shell">
+          <div className="section-label">FREE STARTER</div>
+          <div className="free-heading">
+            <div>
+              <h2>10 problems designed to expose weak problem-solving habits.</h2>
+              <p>No giant textbook. No 47-hour lecture marathon. Solve, think, test, improve.</p>
+            </div>
+            <div className="progress-card">
+              <strong>{freeChallenges.length}</strong>
+              <span>free challenges</span>
+            </div>
           </div>
+
           <div className="challenge-list">
-            {challenges.map((challenge, i) => <div className="challenge" key={challenge}><span>0{i + 1}</span>{challenge}</div>)}
-            <div className="challenge more">+ 7 more challenges in the free pack</div>
+            {freeChallenges.map((challenge) => (
+              <article className={`challenge ${selected === challenge.id ? 'active' : ''}`} key={challenge.id}>
+                <button className="challenge-main" onClick={() => setSelected(selected === challenge.id ? null : challenge.id)}>
+                  <span className="challenge-number">{String(challenge.id).padStart(2, '0')}</span>
+                  <span className="challenge-info">
+                    <strong>{challenge.title}</strong>
+                    <small>{challenge.skill} · {challenge.difficulty}</small>
+                  </span>
+                  <span className="chevron">{selected === challenge.id ? '−' : '+'}</span>
+                </button>
+                {selected === challenge.id && (
+                  <div className="challenge-detail">
+                    <p>{challenge.prompt}</p>
+                    <code>{challenge.example}</code>
+                    <div><b>Hint:</b> {challenge.hint}</div>
+                  </div>
+                )}
+              </article>
+            ))}
           </div>
+        </div>
+      </section>
+
+      <section className="cta-section shell">
+        <div className="cta-card">
+          <div className="section-label">THE GOAL</div>
+          <h2>From “I don't know how to start” to “I know exactly what to do next.”</h2>
+          <p>DevSprint is being built around practice, feedback, and measurable progress, not content for content's sake.</p>
+          <button className="button primary" onClick={() => scrollTo('free')}>Begin with Challenge 01</button>
         </div>
       </section>
 
