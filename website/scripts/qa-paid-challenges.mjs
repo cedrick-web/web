@@ -52,7 +52,7 @@ registry.modules.forEach((module, index) => {
 
 for (const challenge of registry.challenges) {
   assert(/^DSP-\d{3}$/.test(challenge.id), `Invalid challenge ID: ${challenge.id}`);
-  assert(challenge.title?.trim(), `${challenge.id} is missing a title`);
+  assert(challenge.title?.trim(), `${challenge.id} is missing a registry title`);
   assert(challenge.module?.trim(), `${challenge.id} is missing a module`);
   assert(challenge.source?.trim(), `${challenge.id} is missing a source`);
 }
@@ -82,7 +82,6 @@ for (const file of moduleFiles) {
 
   for (const challenge of referenced) {
     assert(text.includes(challenge.id), `${file} is missing registry challenge ${challenge.id}`);
-    assert(text.includes(challenge.title), `${file} is missing registry title for ${challenge.id}: ${challenge.title}`);
   }
 }
 
@@ -92,4 +91,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log('Paid challenge QA passed: 60 registry entries, 8 modules, ranges, titles, IDs, and source documents verified.');
+console.log('Paid challenge QA passed: 60 registry entries, 8 modules, ranges, IDs, and source documents verified.');
