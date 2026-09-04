@@ -83,19 +83,21 @@ Build a JavaScript application that calculates statistics, searches students, so
 
 Target: **60 original challenges**.
 
-| Module | Challenge count |
-|---|---:|
-| Think Like a Programmer | 6 |
-| JavaScript for Problem Solving | 7 |
-| Arrays & Strings | 12 |
-| Searching | 7 |
-| Sorting | 7 |
-| Data Structures | 10 |
-| Big-O | 5 |
-| Problem-Solving Lab | 6 |
-| **Total** | **60** |
+| Module | Challenge count | IDs |
+|---|---:|---|
+| Think Like a Programmer | 6 | DSP-001–006 |
+| JavaScript for Problem Solving | 6 | DSP-007–012 |
+| Arrays & Strings | 12 | DSP-013–024 |
+| Searching | 7 | DSP-025–031 |
+| Sorting | 7 | DSP-032–038 |
+| Data Structures | 10 | DSP-039–048 |
+| Big-O | 5 | DSP-049–053 |
+| Problem-Solving Lab | 7 | DSP-054–060 |
+| **Total** | **60** | **DSP-001–060** |
 
 The free 10-challenge pack is a subset designed as a lead magnet. Paid challenges must add meaningful depth rather than simply repeating the free pack.
+
+The machine-readable registry at `products/javascript-toolkit/data/challenge-registry.json` is the canonical inventory for IDs, module membership, titles, and source documents.
 
 ## Challenge quality standard
 
