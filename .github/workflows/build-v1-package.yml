@@ -1,0 +1,63 @@
+name: Build DevSprint V1 Customer Package
+
+on:
+  push:
+    branches: ['devsprint-v1']
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify repository QA
+        working-directory: website
+        run: |
+          npm install
+          npm run check
+
+      - name: Assemble customer package
+        run: |
+          set -euo pipefail
+          PKG="DEVSPRINT-JAVASCRIPT-PROBLEM-SOLVING-DSA-TOOLKIT-V1"
+          rm -rf "$PKG" "$PKG.zip"
+          mkdir -p "$PKG/Workbook" "$PKG/Practice" "$PKG/Debugging-Lab" "$PKG/Assessment-Simulator" "$PKG/Final-Project" "$PKG/Tests" "$PKG/Revision"
+
+          cp products/javascript-toolkit/customer/README.md "$PKG/README.md"
+
+          cp products/javascript-toolkit/paid/module-01-think-like-a-programmer.md "$PKG/Workbook/Module-01-Think-Like-a-Programmer.md"
+          cp products/javascript-toolkit/paid/module-02-javascript-for-problem-solving.md "$PKG/Workbook/Module-02-JavaScript-for-Problem-Solving.md"
+          cp products/javascript-toolkit/paid/module-03-arrays-and-strings.md "$PKG/Workbook/Module-03-Arrays-and-Strings.md"
+          cp products/javascript-toolkit/paid/module-04-searching.md "$PKG/Workbook/Module-04-Searching.md"
+          cp products/javascript-toolkit/paid/module-05-sorting.md "$PKG/Workbook/Module-05-Sorting.md"
+          cp products/javascript-toolkit/paid/module-06-data-structures.md "$PKG/Workbook/Module-06-Data-Structures.md"
+          cp products/javascript-toolkit/paid/module-07-big-o-without-the-pain.md "$PKG/Workbook/Module-07-Big-O-Without-the-Pain.md"
+          cp products/javascript-toolkit/paid/module-08-problem-solving-lab.md "$PKG/Workbook/Module-08-Problem-Solving-Lab.md"
+
+          cp products/javascript-toolkit/customer/Practice/60-Challenge-Index.md "$PKG/Practice/60-Challenge-Index.md"
+          cp products/javascript-toolkit/customer/Debugging-Lab/Debugging-Lab.md "$PKG/Debugging-Lab/Debugging-Lab.md"
+          cp products/javascript-toolkit/customer/Assessment-Simulator/Assessment-Simulator.md "$PKG/Assessment-Simulator/Assessment-Simulator.md"
+          cp products/javascript-toolkit/paid/final-project-student-performance-analyzer.md "$PKG/Final-Project/Student-Performance-Analyzer.md"
+          cp products/javascript-toolkit/customer/Tests/Test-Guide.md "$PKG/Tests/Test-Guide.md"
+          cp products/javascript-toolkit/customer/Revision/Revision-Checklist.md "$PKG/Revision/Revision-Checklist.md"
+
+          test "$(find "$PKG/Workbook" -type f | wc -l)" -eq 8
+          test "$(grep -Rho 'DSP-[0-9][0-9][0-9]' "$PKG/Workbook" | sort -u | wc -l)" -eq 60
+          test -f "$PKG/README.md"
+          test -f "$PKG/Final-Project/Student-Performance-Analyzer.md"
+          test -f "$PKG/Debugging-Lab/Debugging-Lab.md"
+          test -f "$PKG/Assessment-Simulator/Assessment-Simulator.md"
+          test -f "$PKG/Revision/Revision-Checklist.md"
+
+          zip -qr "$PKG.zip" "$PKG"
+
+      - name: Upload customer ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: DevSprint-JavaScript-Problem-Solving-DSA-Toolkit-V1
+          path: DEVSPRINT-JAVASCRIPT-PROBLEM-SOLVING-DSA-TOOLKIT-V1.zip
+          if-no-files-found: error
+          retention-days: 30
