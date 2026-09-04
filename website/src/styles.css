@@ -9,14 +9,16 @@
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; min-width: 320px; background: #070b12; }
-a { color: inherit; text-decoration: none; }
+button { font: inherit; }
 .shell { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
 
 .nav { min-height: 76px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1a2230; }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: -.02em; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: -.02em; color: inherit; }
+.brand-button { border: 0; background: transparent; padding: 0; cursor: pointer; }
 .brand-mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: #f5f7fb; color: #070b12; font-weight: 900; }
-.nav-links { display: flex; gap: 28px; color: #aeb8c8; font-size: 14px; }
-.nav-links a:hover { color: #fff; }
+.nav-links { display: flex; gap: 28px; }
+.nav-links button { border: 0; background: transparent; color: #aeb8c8; font-size: 14px; cursor: pointer; padding: 8px 0; }
+.nav-links button:hover { color: #fff; }
 
 .hero { padding: 105px 0 90px; }
 .eyebrow, .section-label { font-size: 12px; font-weight: 800; letter-spacing: .16em; color: #8e9aad; }
@@ -24,35 +26,53 @@ a { color: inherit; text-decoration: none; }
 .hero h1 span { color: #8fd3ff; }
 .hero-copy { max-width: 700px; color: #aeb8c8; font-size: 19px; line-height: 1.65; }
 .actions { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
-.button { display: inline-flex; align-items: center; justify-content: center; padding: 13px 19px; border-radius: 10px; font-weight: 800; font-size: 14px; border: 1px solid #273142; }
+.button { display: inline-flex; align-items: center; justify-content: center; padding: 13px 19px; border-radius: 10px; font-weight: 800; font-size: 14px; border: 1px solid #273142; cursor: pointer; }
 .button.primary { background: #f5f7fb; color: #070b12; border-color: #f5f7fb; }
 .button.secondary { color: #f5f7fb; background: #0e141e; }
+.button:hover { transform: translateY(-1px); }
 .proof-row { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 26px; color: #7f8b9d; font-size: 13px; }
 
 .method-section, .free-section { background: #0c121c; border-top: 1px solid #1a2230; border-bottom: 1px solid #1a2230; padding: 85px 0; }
 section h2 { font-size: clamp(30px, 4vw, 50px); line-height: 1.05; letter-spacing: -.045em; max-width: 760px; margin: 16px 0 40px; }
 .method-grid { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid #222c3b; border-radius: 14px; overflow: hidden; }
-.step { min-height: 125px; padding: 22px; border-right: 1px solid #222c3b; border-bottom: 1px solid #222c3b; display: flex; flex-direction: column; justify-content: space-between; }
+.step { min-height: 150px; padding: 22px; border-right: 1px solid #222c3b; border-bottom: 1px solid #222c3b; display: flex; flex-direction: column; justify-content: space-between; }
+.step:nth-child(4n) { border-right: 0; }
 .step b { color: #687487; font-size: 12px; }
-.step span { font-weight: 750; }
+.step strong { font-size: 18px; }
+.step p { color: #7f8b9d; font-size: 13px; line-height: 1.5; margin: 10px 0 0; }
 
 .product-section { padding: 90px 0; }
 .product-card { display: grid; grid-template-columns: 1.7fr .8fr; gap: 45px; padding: 38px; border: 1px solid #273142; border-radius: 18px; background: linear-gradient(145deg, #101824, #0a0f17); }
 .tag { font-size: 11px; font-weight: 800; letter-spacing: .13em; color: #8fd3ff; }
 .product-card h2 { margin: 15px 0 18px; font-size: clamp(30px, 4vw, 48px); }
-.product-card p, .product-card li, .free-grid p { color: #aeb8c8; line-height: 1.65; }
+.product-card p, .product-card li, .free-heading p { color: #aeb8c8; line-height: 1.65; }
 .product-card ul { padding-left: 20px; display: grid; gap: 10px; }
 .price-box { border: 1px solid #273142; border-radius: 14px; padding: 24px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; }
 .price-box span, .price-box small { color: #7f8b9d; }
 .price-box strong { font-size: 42px; margin: 7px 0; }
 .price-box .button { margin-top: 22px; width: 100%; }
 
-.free-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 70px; align-items: start; }
+.free-heading { display: flex; justify-content: space-between; align-items: end; gap: 30px; }
+.progress-card { min-width: 145px; padding: 20px; border: 1px solid #273142; border-radius: 14px; background: #101824; display: grid; }
+.progress-card strong { font-size: 34px; }
+.progress-card span { color: #7f8b9d; font-size: 12px; }
 .challenge-list { border: 1px solid #273142; border-radius: 14px; overflow: hidden; }
-.challenge { padding: 19px 20px; border-bottom: 1px solid #222c3b; display: flex; gap: 16px; align-items: center; font-weight: 650; }
+.challenge { border-bottom: 1px solid #222c3b; }
 .challenge:last-child { border-bottom: 0; }
-.challenge span { color: #718096; font-size: 12px; }
-.challenge.more { color: #8fd3ff; }
+.challenge.active { background: #101824; }
+.challenge-main { width: 100%; padding: 19px 20px; border: 0; background: transparent; color: inherit; display: flex; gap: 16px; align-items: center; text-align: left; cursor: pointer; }
+.challenge-main:hover { background: #101824; }
+.challenge-number { color: #718096; font-size: 12px; width: 25px; }
+.challenge-info { display: grid; gap: 5px; flex: 1; }
+.challenge-info small { color: #718096; font-size: 12px; }
+.chevron { font-size: 20px; color: #8fd3ff; }
+.challenge-detail { padding: 0 55px 22px 61px; color: #aeb8c8; line-height: 1.6; }
+.challenge-detail code { display: block; padding: 12px; margin: 12px 0; border-radius: 8px; background: #070b12; color: #8fd3ff; overflow-x: auto; }
+
+.cta-section { padding: 90px 0; }
+.cta-card { padding: 50px; border: 1px solid #273142; border-radius: 18px; background: radial-gradient(circle at top right, #15263b, #0b111a 55%); }
+.cta-card h2 { margin-bottom: 18px; }
+.cta-card p { max-width: 650px; color: #aeb8c8; line-height: 1.65; margin-bottom: 28px; }
 .footer { min-height: 150px; padding: 45px 0; display: flex; align-items: end; justify-content: space-between; color: #687487; font-size: 13px; }
 .footer p { max-width: 360px; margin: 12px 0 0; }
 
@@ -60,7 +80,20 @@ section h2 { font-size: clamp(30px, 4vw, 50px); line-height: 1.05; letter-spacin
   .nav-links { display: none; }
   .hero { padding-top: 70px; }
   .method-grid { grid-template-columns: repeat(2, 1fr); }
-  .product-card, .free-grid { grid-template-columns: 1fr; }
+  .step:nth-child(4n) { border-right: 1px solid #222c3b; }
+  .step:nth-child(2n) { border-right: 0; }
+  .product-card, .free-heading { grid-template-columns: 1fr; display: grid; }
   .product-card { padding: 25px; }
+  .progress-card { width: 100%; }
+  .challenge-detail { padding-left: 61px; }
+  .cta-card { padding: 30px 24px; }
   .footer { align-items: flex-start; flex-direction: column; gap: 30px; }
+}
+
+@media (max-width: 480px) {
+  .shell { width: min(100% - 28px, 1120px); }
+  .hero h1 { font-size: 45px; }
+  .method-grid { grid-template-columns: 1fr; }
+  .step, .step:nth-child(2n) { border-right: 0; }
+  .challenge-detail { padding-left: 20px; }
 }
