@@ -1,7 +1,7 @@
 {
   "name": "devsprint-web",
   "private": true,
-  "version": "0.1.3",
+  "version": "0.1.4",
   "type": "module",
   "engines": {
     "node": ">=18.0.0"
@@ -10,7 +10,8 @@
     "dev": "vite",
     "build": "vite build",
     "qa": "node scripts/qa-challenges.mjs",
-    "check": "npm run qa && npm run build",
+    "qa:paid": "node scripts/qa-paid-challenges.mjs",
+    "check": "npm run qa && npm run qa:paid && npm run build",
     "preview": "vite preview"
   },
   "dependencies": {
