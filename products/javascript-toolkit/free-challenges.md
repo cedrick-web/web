@@ -4,7 +4,7 @@
 
 **Goal:** Practice the full DevSprint loop: Understand → Break down → Algorithm → Pseudocode → Implement → Test → Debug → Analyze.
 
-Do not look at the solution first. Human beings have somehow survived thousands of years without immediately scrolling to the answer. Try the problem.
+Do not look at the solution first. Try the problem before scrolling to the answer.
 
 ---
 
@@ -13,7 +13,7 @@ Do not look at the solution first. Human beings have somehow survived thousands 
 **Difficulty:** 1/5  
 **Skill:** Arrays, iteration, comparison
 
-Write `findLargest(numbers)` that returns the largest number in a non-empty array without using `Math.max()` or sorting.
+Write `findLargest(numbers)` that returns the largest number in a non-empty array without sorting.
 
 **Example:** `[8, 3, 15, 6, 10]` → `15`
 
@@ -31,16 +31,14 @@ function findLargest(numbers) {
   let largest = numbers[0];
 
   for (let i = 1; i < numbers.length; i++) {
-    if (numbers[i] > largest) {
-      largest = numbers[i];
-    }
+    if (numbers[i] > largest) largest = numbers[i];
   }
 
   return largest;
 }
 ```
 
-**Tests:** `[5] → 5`, `[-8, -3, -15] → -3`, `[4, 4, 4] → 4`  
+**Tests:** `[5] → 5`, `[-4, -9, -2] → -2`, `[0, -1, -3] → 0`  
 **Complexity:** Time `O(n)`, Space `O(1)`.
 
 ---
@@ -68,16 +66,14 @@ function countEven(numbers) {
   let count = 0;
 
   for (const number of numbers) {
-    if (number % 2 === 0) {
-      count++;
-    }
+    if (number % 2 === 0) count++;
   }
 
   return count;
 }
 ```
 
-**Tests:** `[] → 0`, `[1, 3, 5] → 0`, `[2, 4, 6] → 3`  
+**Tests:** `[] → 0`, `[1, 3, 5] → 0`, `[-4, -3, 0, 2] → 3`  
 **Complexity:** Time `O(n)`, Space `O(1)`.
 
 ---
@@ -89,7 +85,7 @@ function countEven(numbers) {
 
 Write `reverseString(text)` without using `.reverse()`.
 
-**Example:** `"hello"` → `"olleh"`
+**Example:** `"devsprint"` → `"tnirpsved"`
 
 **Hint:** Build the result from the end of the string toward the beginning.
 
@@ -102,7 +98,7 @@ Write `reverseString(text)` without using `.reverse()`.
 ### Solution
 ```js
 function reverseString(text) {
-  let result = "";
+  let result = '';
 
   for (let i = text.length - 1; i >= 0; i--) {
     result += text[i];
@@ -112,15 +108,15 @@ function reverseString(text) {
 }
 ```
 
-**Tests:** `"" → ""`, `"a" → "a"`, `"DevSprint" → "tnirpS veD"`  
-**Complexity:** Time `O(n)`, Space `O(n)` for the returned string.
+**Tests:** `"" → ""`, `"a" → "a"`, `"DevSprint" → "tnirpSveD"`  
+**Complexity:** Time `O(n)`, Space `O(n)`.
 
 ---
 
 ## Challenge 04: Sum Positive Numbers
 
-**Difficulty:** 1/5  
-**Skill:** Accumulators, conditions
+**Difficulty:** 2/5  
+**Skill:** Arrays, conditions, accumulators
 
 Write `sumPositive(numbers)` that returns the sum of only positive numbers.
 
@@ -131,31 +127,29 @@ Write `sumPositive(numbers)` that returns the sum of only positive numbers.
 ### Solution
 ```js
 function sumPositive(numbers) {
-  let sum = 0;
+  let total = 0;
 
   for (const number of numbers) {
-    if (number > 0) {
-      sum += number;
-    }
+    if (number > 0) total += number;
   }
 
-  return sum;
+  return total;
 }
 ```
 
-**Tests:** `[] → 0`, `[-4, -2] → 0`, `[5, 10] → 15`  
+**Tests:** `[-2, 5, 7, -1, 3] → 15`, `[-4, 0] → 0`, `[1, -1, 0, 3] → 4`  
 **Complexity:** Time `O(n)`, Space `O(1)`.
 
 ---
 
-## Challenge 05: Find the First Matching Value
+## Challenge 05: Find First Matching Value
 
 **Difficulty:** 2/5  
 **Skill:** Linear search, early exit
 
-Write `findIndex(numbers, target)` that returns the index of the first occurrence of `target`, or `-1` when it does not exist. Do not use `.indexOf()`.
+Write `findFirst(numbers, target)` that returns the index of the first occurrence of `target`, or `-1` when it does not exist. Do not use `.indexOf()`.
 
-**Example:** `findIndex([4, 8, 2, 8], 8)` → `1`
+**Example:** `findFirst([4, 8, 2, 8], 8)` → `1`
 
 **Hint:** Return immediately when you find the target.
 
@@ -167,57 +161,78 @@ Write `findIndex(numbers, target)` that returns the index of the first occurrenc
 
 ### Solution
 ```js
-function findIndex(numbers, target) {
+function findFirst(numbers, target) {
   for (let i = 0; i < numbers.length; i++) {
-    if (numbers[i] === target) {
-      return i;
-    }
+    if (numbers[i] === target) return i;
   }
 
   return -1;
 }
 ```
 
-**Tests:** target at beginning, middle, end, and absent.  
+**Tests:** `[4, 8, 2, 8], 8 → 1`, `[1, 2, 3], 9 → -1`, `[7, 2, 7], 7 → 0`, `[], 1 → -1`  
 **Complexity:** Time `O(n)`, Space `O(1)`.
 
 ---
 
 ## Challenge 06: Remove Duplicates
 
-**Difficulty:** 2/5  
-**Skill:** Sets, arrays, uniqueness
+**Difficulty:** 3/5  
+**Skill:** Arrays, Set, uniqueness
 
-Write `removeDuplicates(numbers)` that returns a new array containing each value once while preserving its first-seen order.
+Write `removeDuplicates(numbers)` that returns a new array containing each value once while preserving first-seen order.
 
-**Example:** `[3, 1, 3, 2, 1, 4]` → `[3, 1, 2, 4]`
+**Example:** `[3, 3, 1, 2, 1]` → `[3, 1, 2]`
 
-**Hint:** JavaScript's `Set` is designed to store unique values.
+**Hint:** A `Set` can remember which values have already appeared.
+
+### Pseudocode
+1. Create an empty `Set` and result array.
+2. Visit each value.
+3. If the `Set` does not contain it, add it to both.
+4. Return result.
 
 ### Solution
 ```js
 function removeDuplicates(numbers) {
-  return [...new Set(numbers)];
+  const seen = new Set();
+  const result = [];
+
+  for (const number of numbers) {
+    if (!seen.has(number)) {
+      seen.add(number);
+      result.push(number);
+    }
+  }
+
+  return result;
 }
 ```
 
-**Tests:** `[] → []`, `[1, 1, 1] → [1]`, `[2, 3, 2, 4] → [2, 3, 4]`  
+**Tests:** `[] → []`, `[5, 5, 5] → [5]`, `[2, 3, 2, 4] → [2, 3, 4]`  
 **Complexity:** Average time `O(n)`, Space `O(n)`.
 
-**Think:** Could you solve this without `Set`? That is the extension challenge.
+**Extension:** Solve it without `Set` and compare the complexity and readability.
 
 ---
 
-## Challenge 07: Check for a Palindrome
+## Challenge 07: Check Palindrome
 
-**Difficulty:** 2/5  
+**Difficulty:** 3/5  
 **Skill:** Strings, two pointers
 
 Write `isPalindrome(text)` that returns `true` when the string reads the same forward and backward. Treat uppercase and lowercase as equivalent.
 
-**Example:** `"Level"` → `true`; `"coding"` → `false`
+**Example:** `"Level"` → `true`
 
 **Hint:** Normalize the text, then compare characters from both ends.
+
+### Pseudocode
+1. Normalize the string.
+2. Set `left` at the beginning and `right` at the end.
+3. Compare both characters.
+4. Move inward until they meet.
+5. Return `true` if no mismatch is found.
 
 ### Solution
 ```js
@@ -227,10 +242,7 @@ function isPalindrome(text) {
   let right = value.length - 1;
 
   while (left < right) {
-    if (value[left] !== value[right]) {
-      return false;
-    }
-
+    if (value[left] !== value[right]) return false;
     left++;
     right--;
   }
@@ -239,58 +251,71 @@ function isPalindrome(text) {
 }
 ```
 
-**Tests:** `"a" → true`, `"abba" → true`, `"abca" → false`  
-**Complexity:** Time `O(n)`, Space `O(n)` because of normalization.
+**Tests:** `"Level" → true`, `"hello" → false`, `"" → true`, `"RaceCar" → true`  
+**Complexity:** Time `O(n)`, Space `O(n)` for normalized text.
 
 ---
 
-## Challenge 08: Find the Second Largest Distinct Number
+## Challenge 08: Second Largest Distinct Number
 
 **Difficulty:** 3/5  
-**Skill:** Tracking multiple values, edge cases
+**Skill:** Arrays, state tracking, edge cases
 
 Write `secondLargest(numbers)` that returns the second-largest **distinct** number. Return `null` if fewer than two distinct values exist.
 
-**Example:** `[10, 4, 8, 10, 6]` → `8`
+**Example:** `[10, 4, 10, 7, 8]` → `8`
 
-**Hint:** Track the largest and second-largest values while scanning once.
+**Hint:** Track the largest and second-largest distinct values while scanning once. Do not use sorting.
+
+### Pseudocode
+1. Start `largest` and `second` as empty.
+2. Visit each number.
+3. Ignore a number equal to `largest`.
+4. Update `largest` and `second` when appropriate.
+5. Return `second`, or `null` when it does not exist.
 
 ### Solution
 ```js
 function secondLargest(numbers) {
-  let largest = null;
-  let second = null;
+  let largest;
+  let second;
 
   for (const number of numbers) {
-    if (largest === null || number > largest) {
-      if (largest !== number) {
-        second = largest;
-      }
+    if (number === largest) continue;
+
+    if (largest === undefined || number > largest) {
+      second = largest;
       largest = number;
-    } else if (number !== largest && (second === null || number > second)) {
+    } else if (second === undefined || number > second) {
       second = number;
     }
   }
 
-  return second;
+  return second === undefined ? null : second;
 }
 ```
 
-**Tests:** `[5] → null`, `[5, 5] → null`, `[5, 3, 4] → 4`, `[-1, -4, -2] → -2`  
+**Tests:** `[10, 4, 10, 7, 8] → 8`, `[5, 5] → null`, `[-2, -8, -4] → -4`, `[0, -1] → -1`, `[0, 0, -2] → -2`, `[] → null`  
 **Complexity:** Time `O(n)`, Space `O(1)`.
 
 ---
 
-## Challenge 09: Check Balanced Parentheses
+## Challenge 09: Balanced Parentheses
 
 **Difficulty:** 3/5  
 **Skill:** Stack, data structures
 
 Write `isBalanced(text)` that checks whether `(` and `)` are correctly paired and nested.
 
-**Examples:** `"(()())" → true`, `"(()" → false`, `")(" → false`
+**Examples:** `"(()())" → true`, `"(()"` → false`, `")("` → false`
 
-**Hint:** Every opening parenthesis must be remembered until its matching closing parenthesis appears. That is exactly the job of a stack.
+**Hint:** Every opening parenthesis must be remembered until its matching closing parenthesis appears. That is exactly what a stack is for.
+
+### Pseudocode
+1. Create an empty stack.
+2. Push every opening parenthesis.
+3. For a closing parenthesis, reject if the stack is empty; otherwise pop.
+4. Accept only when the stack is empty at the end.
 
 ### Solution
 ```js
@@ -298,12 +323,9 @@ function isBalanced(text) {
   const stack = [];
 
   for (const char of text) {
-    if (char === "(") {
-      stack.push(char);
-    } else if (char === ")") {
-      if (stack.length === 0) {
-        return false;
-      }
+    if (char === '(') stack.push(char);
+    else if (char === ')') {
+      if (stack.length === 0) return false;
       stack.pop();
     }
   }
@@ -312,19 +334,19 @@ function isBalanced(text) {
 }
 ```
 
-**Tests:** `"" → true`, `"()" → true`, `"((()))" → true`, `"(()))" → false`  
+**Tests:** `"" → true`, `"()" → true`, `"((()))" → true`, `"(()" → false`, `"())(" → false`  
 **Complexity:** Time `O(n)`, Space `O(n)`.
 
 **Extension:** Support `[]` and `{}` too.
 
 ---
 
-## Challenge 10: Find Two Numbers That Add to a Target
+## Challenge 10: Two Sum
 
 **Difficulty:** 3/5  
-**Skill:** Hash maps, algorithm design
+**Skill:** Hash map, algorithm design
 
-Write `twoSum(numbers, target)` that returns the indexes of two different values whose sum equals `target`. Return `null` if no pair exists.
+Write `twoSum(numbers, target)` that returns the indexes of two different values whose sum equals `target`. Return `[]` if no pair exists.
 
 **Example:** `twoSum([2, 7, 11, 15], 9)` → `[0, 1]`
 
@@ -335,7 +357,7 @@ Write `twoSum(numbers, target)` that returns the indexes of two different values
 2. For each number, calculate `needed = target - number`.
 3. If `needed` is already in the map, return its index and the current index.
 4. Otherwise store the current number and index.
-5. Return `null` if no pair exists.
+5. Return `[]` if no pair exists.
 
 ### Solution
 ```js
@@ -345,18 +367,15 @@ function twoSum(numbers, target) {
   for (let i = 0; i < numbers.length; i++) {
     const needed = target - numbers[i];
 
-    if (seen.has(needed)) {
-      return [seen.get(needed), i];
-    }
-
+    if (seen.has(needed)) return [seen.get(needed), i];
     seen.set(numbers[i], i);
   }
 
-  return null;
+  return [];
 }
 ```
 
-**Tests:** `[2, 7, 11, 15], 9 → [0, 1]`, `[3, 3], 6 → [0, 1]`, `[1, 2], 8 → null`  
+**Tests:** `[2, 7, 11, 15], 9 → [0, 1]`, `[3, 2, 4], 6 → [1, 2]`, `[3, 3], 6 → [0, 1]`, `[1, 5], 10 → []`, `[-3, 4, 2, 7], 1 → [0, 1]`  
 **Complexity:** Average time `O(n)`, Space `O(n)`.
 
 ---
@@ -366,7 +385,7 @@ function twoSum(numbers, target) {
 Score yourself honestly:
 
 - **0–3 solved independently:** Focus on the DevSprint thinking loop before increasing difficulty.
-- **4–6:** Your basic problem-solving foundation is forming. Repeat the failed problems without looking at solutions.
+- **4–6:** Your basic problem-solving foundation is forming. Repeat failed problems without looking at solutions.
 - **7–8:** You are ready for more data-structure and complexity work.
 - **9–10:** Move into the paid toolkit's deeper problem sets and timed assessments.
 
@@ -380,4 +399,4 @@ Score yourself honestly:
 6. If you copy a solution, mark the challenge as **not yet mastered**.
 7. Re-solve missed challenges 24–48 hours later without notes.
 
-**Next step:** use these ten challenges as the free entry product, then move learners into the full 60-problem JavaScript Problem-Solving & DSA Toolkit.
+**Next step:** Use these ten challenges as the free entry product, then move learners into the full 60-problem JavaScript Problem-Solving & DSA Toolkit.
