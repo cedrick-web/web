@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { freeChallenges } from './challenges';
 import { getCompletedChallenges, saveCompletedChallenges } from './challengeUtils';
 import { modules, tools, challengeTitles, methodSteps } from './learningData';
+import { getModuleContent, markdownBlocks } from './moduleContent';
 
 const nav = [['dashboard','Dashboard'],['modules','Modules'],['challenges','60 Challenges'],['tools','Labs & Tools'],['progress','Progress']];
 
