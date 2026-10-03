@@ -31,6 +31,38 @@ function Dashboard({modules,tools,done,percent,onModule,onTool,onView}){return <
 
 function Modules({modules,moduleDone,onModule}){return <Page><PageIntro label="CURRICULUM" title="Eight modules. One repeatable system." text="Each module contains a learning roadmap, lessons, challenge range, and practice path."/><div className="method-strip">{methodSteps.map(x=><div key={x[0]}><b>{x[0]}</b><strong>{x[1]}</strong><span>{x[2]}</span></div>)}</div><div className="module-grid large">{modules.map(m=><ModuleCard key={m.id} module={m} completed={moduleDone(m)} onClick={()=>onModule(m)}/>)}</div></Page>}
 
+function MarkdownContent({markdown}) {
+  return <div className="markdown-content">{markdownBlocks(markdown).map((block,index)=>{
+    if(block.type==='code') return <pre className="markdown-code" key={index}><code>{block.value}</code></pre>;
+    if(block.type==='heading') return <h3 key={index}>{block.value}</h3>;
+    if(block.type==='list') return <div className="markdown-list" key={index}>• {block.value}</div>;
+    if(block.type==='table') return <div className="markdown-table-row" key={index}>{block.value}</div>;
+    return <p key={index}>{block.value}</p>;
+  })}</div>;
+}
+
+function FullCurriculum({module}) {
+  const content=getModuleContent(module);
+  return <div className="full-curriculum">
+    <section className="curriculum-content-card">
+      <span className="section-label">SOURCE CURRICULUM</span>
+      <p>This module is loaded directly from the DevSprint paid curriculum source, so the website and the product stay aligned.</p>
+    </section>
+    <section className="curriculum-content-card">
+      <span className="section-label">DEBUGGING LAB</span>
+      <MarkdownContent markdown={content.debugging}/>
+    </section>
+    <section className="curriculum-content-card">
+      <span className="section-label">MODULE ASSESSMENT</span>
+      <MarkdownContent markdown={content.assessment}/>
+    </section>
+    <section className="curriculum-content-card">
+      <span className="section-label">REVISION CHECKLIST</span>
+      <MarkdownContent markdown={content.revision}/>
+    </section>
+  </div>;
+}
+
 function ModuleDetail({module,completed,moduleDone,titles,freeById,open,setOpen,back,challenges,onLesson,lessonDone}){const first=Number(module.range.match(/DSP-(\d+)/)?.[1]||1);const items=titles.slice(first-1,first-1+module.count);return <Page><button className="back-button" onClick={back}>← Back to modules</button><section className="module-hero"><div><span className="module-number">MODULE {module.number}</span><h1>{module.title}</h1><p>{module.description}</p></div><div className="module-score"><strong>{moduleDone}/{module.count}</strong><span>challenges completed</span><div className="progress-track"><div className="progress-fill" style={{width:`${moduleDone/module.count*100}%`}}/></div></div></section><div className="focus-line"><strong>Focus</strong><span>{module.focus}</span><span>{module.range}</span></div><section className="lesson-roadmap"><span className="section-label">LESSONS</span><div className="lesson-grid">{module.lessonDetails.map((l,i)=><button className={`lesson-card lesson-button ${lessonDone.includes(l.id)?'lesson-complete':''}`} key={l.id} onClick={()=>onLesson(module,l)}><span>LESSON {i+1} {lessonDone.includes(l.id)?'· ✓':''}</span><strong>{l.title}</strong><p>{l.objective}</p><em>Open lesson →</em></button>)}</div></section><section className="lesson-roadmap"><span className="section-label">LEARNING OUTCOMES</span><ul className="outcome-list">{module.outcomes.map(x=><li key={x}>{x}</li>)}</ul></section><section className="lesson-roadmap"><span className="section-label">MODULE WORKFLOW</span><div className="roadmap"><b>Learn</b><i>→</i><b>Attempt</b><i>→</i><b>Test</b><i>→</i><b>Debug</b><i>→</i><b>Analyze</b><i>→</i><b>Improve</b></div><p>Free challenges are interactive here. The complete paid workbook is delivered with the customer product.</p></section><SectionHeader title={`${module.count} challenges`} action="Open challenge browser" onAction={challenges}/><div className="challenge-index">{items.map((title,i)=>{const n=first+i,id=`DSP-${String(n).padStart(3,'0')}`,free=freeById.get(id);return <ChallengeRow key={id} id={id} title={title} completed={completed.includes(id)} free={!!free} onClick={()=>free&&setOpen(x=>({...x,[id]:!x[id]}))}/>})}</div></Page>}
 
 function LessonDetail({module,lesson,done,toggle,back,challenges}){return <Page><button className="back-button" onClick={back}>← Back to module</button><section className="lesson-detail-hero"><span className="module-number">MODULE {module.number} · LESSON</span><h1>{lesson.title}</h1><p>{lesson.objective}</p><div className="lesson-status">{done?'✓ Lesson completed':'In progress'}</div></section><div className="lesson-detail-grid"><section className="lesson-content-card"><span className="section-label">CORE EXPLANATION</span><p>{lesson.explain}</p><h3>Worked example</h3><div className="example-box">{lesson.example}</div><h3>Practice task</h3><div className="practice-box">{lesson.practice}</div><div className="lesson-actions"><button className="button primary" onClick={toggle}>{done?'Mark lesson incomplete':'Mark lesson complete'}</button><button className="button secondary" onClick={challenges}>Practice challenges →</button></div></section><aside className="lesson-sidebar-card"><span className="section-label">MODULE PATH</span><strong>{module.title}</strong><p>{module.focus}</p><div className="lesson-mini-list">{module.lessonDetails.map(x=><div className={x.id===lesson.id?'current':''} key={x.id}><span>{x.title}</span>{lessonDone.includes(x.id)?' ✓':''}</div>)}</div></aside></div></Page>}
