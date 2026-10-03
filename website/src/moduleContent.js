@@ -57,19 +57,53 @@ function parseNamedSection(source, heading) {
 
 export function getModuleContent(module) {
   const source = sourceByNumber[String(Number(module.number))] || '';
-  const fallbackLessons = (module.lessonDetails || module.lessons || []).map((lesson, index) => ({
-    id: 'L' + (index + 1), number: index + 1, title: typeof lesson === 'string' ? lesson : lesson.title,
-    body: typeof lesson === 'string' ? `## ${lesson}\n\n${module.description}` : `## ${lesson.title}\n\n${lesson.objective}\n\n${lesson.explain || ''}\n\nExample: ${lesson.example || ''}\n\nPractice: ${lesson.practice || ''}`
-  }));
-  if (!source) return { source: '', lessons: fallbackLessons, challenges: [], debugging: '', assessment: '', revision: '' };
-  const parsedLessons = parseLessons(source);
+  const parsedLessons = source ? parseLessons(source) : [];
+  const parsedChallenges = source ? parseChallenges(source) : [];
+
+  // learningData.js is the canonical website curriculum. Markdown is enrichment,
+  // never the single point of failure for the module UI.
+  const canonicalLessons = (module.lessonDetails || []).map((lesson, index) => {
+    const sourceLesson = parsedLessons[index] || parsedLessons.find(item =>
+      item.title.toLowerCase() === String(lesson.title).toLowerCase()
+    );
+    return {
+      id: lesson.id,
+      number: index + 1,
+      title: lesson.title,
+      body: sourceLesson?.body || [
+        '## ' + lesson.title,
+        '',
+        lesson.objective,
+        '',
+        '**Concept:**',
+        lesson.explain,
+        '',
+        '**Example:**',
+        lesson.example,
+        '',
+        '**Practice:**',
+        lesson.practice
+      ].join('\n')
+    };
+  });
+
+  const firstChallenge = Number(module.range.match(/DSP-(\d+)/)?.[1] || 1);
+  const canonicalChallenges = challengeTitles
+    .slice(firstChallenge - 1, firstChallenge - 1 + module.count)
+    .map((challenge, index) => ({
+      title: challenge.title,
+      id: challenge.id,
+      difficulty: '',
+      body: ''
+    }));
+
   return {
     source,
-    lessons: parsedLessons.length ? parsedLessons : fallbackLessons,
-    challenges: parseChallenges(source),
-    debugging: parseNamedSection(source, 'Debugging Lab'),
-    assessment: parseNamedSection(source, 'Module Assessment'),
-    revision: parseNamedSection(source, 'Revision Checklist')
+    lessons: canonicalLessons,
+    challenges: parsedChallenges.length ? parsedChallenges : canonicalChallenges,
+    debugging: parseNamedSection(source, 'Debugging Lab') || 'Use the debugging workflow: reproduce the problem, isolate the smallest failing case, explain the cause, fix it, and test the regression.',
+    assessment: parseNamedSection(source, 'Module Assessment') || 'Complete the module challenges without copying a solution. Explain your algorithm, test edge cases, and state time and space complexity.',
+    revision: parseNamedSection(source, 'Revision Checklist') || 'Can I explain the problem? Can I state input/output? Can I write pseudocode? Can I test edge cases? Can I explain complexity?'
   };
 }
 
