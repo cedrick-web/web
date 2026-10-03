@@ -1,4 +1,4 @@
-import { modules } from './learningData';
+import { challengeTitles } from './learningData';
 
 const rawModules = import.meta.glob('../../products/javascript-toolkit/paid/*.md', {
   query: '?raw',
