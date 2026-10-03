@@ -1,3 +1,5 @@
+import { modules } from './learningData';
+
 const rawModules = import.meta.glob('../../products/javascript-toolkit/paid/*.md', {
   query: '?raw',
   import: 'default',
@@ -55,10 +57,15 @@ function parseNamedSection(source, heading) {
 
 export function getModuleContent(module) {
   const source = sourceByNumber[String(Number(module.number))] || '';
-  if (!source) return { source: '', lessons: [], challenges: [], debugging: '', assessment: '', revision: '' };
+  const fallbackLessons = (module.lessonDetails || module.lessons || []).map((lesson, index) => ({
+    id: 'L' + (index + 1), number: index + 1, title: typeof lesson === 'string' ? lesson : lesson.title,
+    body: typeof lesson === 'string' ? `## ${lesson}\n\n${module.description}` : `## ${lesson.title}\n\n${lesson.objective}\n\n${lesson.explain || ''}\n\nExample: ${lesson.example || ''}\n\nPractice: ${lesson.practice || ''}`
+  }));
+  if (!source) return { source: '', lessons: fallbackLessons, challenges: [], debugging: '', assessment: '', revision: '' };
+  const parsedLessons = parseLessons(source);
   return {
     source,
-    lessons: parseLessons(source),
+    lessons: parsedLessons.length ? parsedLessons : fallbackLessons,
     challenges: parseChallenges(source),
     debugging: parseNamedSection(source, 'Debugging Lab'),
     assessment: parseNamedSection(source, 'Module Assessment'),
