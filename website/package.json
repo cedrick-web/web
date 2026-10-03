@@ -11,8 +11,9 @@
     "build": "vite build",
     "qa": "node scripts/qa-challenges.mjs",
     "qa:paid": "node scripts/qa-paid-challenges.mjs",
-    "check": "npm run qa && npm run qa:paid && npm run build",
-    "preview": "vite preview"
+    "check": "npm run qa && npm run qa:paid && npm run qa:modules && npm run build",
+    "preview": "vite preview",
+    "qa:modules": "node scripts/qa-modules.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.4",
