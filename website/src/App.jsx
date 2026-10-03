@@ -69,10 +69,26 @@ function LessonDetail({module,lesson,done,toggle,back,challenges}){return <Page>
 
 function FullLessonContent({module,lesson}) {
   const content=getModuleContent(module);
-  const lessonNumber=Number(String(lesson.id).match(/L(\d+)$/)?.[1]||1); const source=content.lessons.find(item=>item.number===lessonNumber);
-  if(!source) return null;
+  const lessonNumber=Number(String(lesson.id).match(/L(\d+)$/)?.[1]||1);
+  const source=content.lessons.find(item=>item.number===lessonNumber);
+
   return <div className="lesson-source-content">
-    <MarkdownContent markdown={source.body}/>
+    <section className="lesson-structured-content">
+      <h2>{lesson.title}</h2>
+      <p>{lesson.objective}</p>
+      <h3>Concept</h3>
+      <p>{lesson.explain}</p>
+      <h3>Example</h3>
+      <pre className="markdown-code"><code>{lesson.example}</code></pre>
+      <h3>Practice</h3>
+      <p>{lesson.practice}</p>
+    </section>
+    {source?.body && source.body !== lesson.objective && (
+      <section className="lesson-source-content">
+        <span className="section-label">CURRICULUM SOURCE</span>
+        <MarkdownContent markdown={source.body}/>
+      </section>
+    )}
   </div>;
 }
 
