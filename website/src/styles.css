@@ -193,3 +193,17 @@ button:disabled { cursor: default; }
   .lesson-detail-grid { grid-template-columns: 1fr; }
   .lesson-sidebar-card { position: static; }
 }
+
+
+/* Full curriculum */
+.full-curriculum{display:grid;gap:18px;margin-top:28px}
+.curriculum-content-card{background:var(--panel,#111821);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:24px}
+.markdown-content{line-height:1.75;color:#c8d1dc}
+.markdown-content p{margin:0 0 14px}
+.markdown-content h3{margin:24px 0 10px;color:#fff;font-size:1.05rem}
+.markdown-content strong{color:#fff}
+.markdown-list{padding:5px 0 5px 18px}
+.markdown-table-row{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.9rem;overflow:auto;white-space:pre}
+.markdown-code{margin:16px 0;padding:18px;border-radius:12px;overflow:auto;background:#0a0f15;border:1px solid rgba(255,255,255,.08);color:#d9e6f3}
+.lesson-source-content{margin-top:8px}
+.full-curriculum .section-label{display:block;margin-bottom:14px}
