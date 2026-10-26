@@ -18,7 +18,8 @@ app.get('/health', async (_req, res) => {
   try {
     await query('SELECT 1 AS ok');
     res.json({ ok: true, service: 'devsprint-api', database: 'ok' });
-  } catch {
+  } catch (error) {
+    console.error('Health check database query failed:', error);
     res.status(503).json({ ok: false, service: 'devsprint-api', database: 'unavailable' });
   }
 });
