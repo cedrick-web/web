@@ -18,8 +18,16 @@ for (const module of modules) {
         failures.push(`Module ${module.number} Lesson ${index + 1} is missing ${field}.`);
       }
     }
+    for (const field of ['objective', 'explain', 'example', 'practice']) {
+      if (/core skill in this module|create a small example for/i.test(String(lesson[field] || ''))) {
+        failures.push(`Module ${module.number} Lesson ${index + 1} still uses generic fallback content in ${field}.`);
+      }
+    }
   });
 }
+
+const lessonIds = modules.flatMap((module) => module.lessonDetails.map((lesson) => lesson.id));
+if (new Set(lessonIds).size !== lessonIds.length) failures.push('Lesson IDs must be unique across all modules.');
 
 if (failures.length) {
   console.error('MODULE QA FAILED');

@@ -112,6 +112,10 @@ Return the first element of an array without scanning the entire array.
 
 Return `null` for an empty array.
 
+### Pseudocode
+1. If the array is empty, return `null`.
+2. Otherwise return the element at index zero.
+
 ### Solution
 ```js
 function firstValue(numbers) {
@@ -143,6 +147,11 @@ The function performs a fixed amount of work regardless of whether the array con
 
 ## Problem
 Determine whether an array contains a duplicate using pairwise comparison.
+
+### Pseudocode
+1. For each index, compare its value with every later value.
+2. Return `true` when a pair matches.
+3. Return `false` if no pair matches.
 
 ### Solution
 ```js
@@ -181,6 +190,12 @@ The two loops do not each scan the entire array independently, but the number of
 
 ## Problem
 Solve the duplicate-detection problem using a `Set`.
+
+### Pseudocode
+1. Create an empty Set of seen values.
+2. For each value, return `true` if it is already in the Set.
+3. Otherwise add it to the Set.
+4. Return `false` if the scan ends.
 
 ### Solution
 ```js
@@ -222,6 +237,13 @@ That is the important engineering lesson: optimization often moves cost from one
 
 ## Problem
 Implement binary search on an ascending sorted array and return the target index, or `-1` when absent.
+
+### Pseudocode
+1. Set the search bounds to the first and last indexes.
+2. While the bounds contain values, inspect the middle value.
+3. Return the middle index if it matches the target.
+4. Discard the half that cannot contain the target.
+5. Return `-1` if the search interval becomes empty.
 
 ### Solution
 ```js
@@ -337,6 +359,25 @@ function containsWithSet(numbers, target) {
 - Many membership queries where ordering is irrelevant: a `Set` can be attractive.
 
 There is no universal winner. Requirements decide.
+
+## Pseudocode
+
+```text
+Compare the three approaches by setup cost, query cost, and extra memory
+Check whether the data is sorted and how many membership queries are required
+Choose the simplest strategy that meets those requirements
+```
+
+## Tests
+
+```js
+containsLinear([1, 3, 5, 7], 5) === true;
+containsLinear([1, 3, 5, 7], 4) === false;
+containsBinary([1, 3, 5, 7], 5) === true;
+containsBinary([], 4) === false;
+containsWithSet([1, 3, 5, 7], 5) === true;
+containsWithSet([1, 3, 5, 7], 4) === false;
+```
 
 ---
 

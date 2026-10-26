@@ -202,22 +202,117 @@ const lessonNotes = {
     explain: 'Big-O is one engineering signal, not the whole decision. Data size, clarity, memory limits, and implementation risk matter too.',
     example: 'A simple O(n²) method can be acceptable for tiny inputs while an O(n) method matters for large production datasets.',
     practice: 'Compare two duplicate detectors and justify the choice for 100 items versus 10 million items.'
+  },
+  'Traversal patterns and running state': {
+    objective: 'Choose an array traversal that keeps the state needed to produce the result in one pass.',
+    explain: 'A running total, current index, or accumulated output lets you process each value once. Use an indexed loop when positions matter and for...of when only values matter.',
+    example: 'For [4, 7, 2], a running sum evolves as 4, then 11, then 13.',
+    practice: 'Write a function that returns a new array of running totals for [3, 1, 4, 2], then test an empty array.'
+  },
+  'Min/max and prefix-style reasoning': {
+    objective: 'Track extrema or cumulative values while scanning without sorting or repeatedly summing prefixes.',
+    explain: 'Initialize state from the first valid item, then update it as each value arrives. Prefix state turns repeated range calculations into constant-time subtraction after one pass.',
+    example: 'For [5, -2, 6], the running prefix totals are [5, 3, 9].',
+    practice: 'Find the minimum and maximum in one pass and explain why sorting is unnecessary.'
+  },
+  'Frequency counting': {
+    objective: 'Represent how often each value appears so membership and count questions can be answered efficiently.',
+    explain: 'A Map stores a count per key. Add one for each value, then use the completed counts to identify duplicates or compare two collections.',
+    example: 'For ["a", "b", "a"], the frequency map contains a → 2 and b → 1.',
+    practice: 'Count the characters in "banana" with a Map and return the first character whose count is one.'
+  },
+  'String normalization and comparison': {
+    objective: 'Define which character differences matter before comparing strings.',
+    explain: 'Case folding, whitespace handling, and punctuation rules are part of the problem contract. Normalize consistently before comparing or counting characters.',
+    example: 'If comparison ignores case and spaces, normalize "Dormitory" and "Dirty room" using the same rule before checking their letter counts.',
+    practice: 'Write a normalization function for a case-insensitive palindrome check and test mixed case, spaces, and an empty string.'
+  },
+  'Linear search and first-match logic': {
+    objective: 'Find the first matching value in unsorted data and return the documented not-found result.',
+    explain: 'A linear scan checks values in order and can stop as soon as the first match is found. It works on unsorted data and has O(n) worst-case time.',
+    example: 'Searching for 8 in [4, 8, 2, 8] returns index 1, not index 3.',
+    practice: 'Implement firstIndexOf without built-in search methods and test a duplicate target and an absent target.'
+  },
+  'Counting occurrences efficiently': {
+    objective: 'Count matching values in sorted data using boundary searches rather than scanning every occurrence.',
+    explain: 'The first matching index and the first index after the match define a half-open range. Their difference is the count; if both boundaries are found by binary search, time is O(log n).',
+    example: 'In [1, 2, 2, 2, 5], lower bound 2 is 1 and upper bound 2 is 4, so there are three matches.',
+    practice: 'Write a countOccurrences function for sorted numbers and test a missing value and a value repeated at both ends.'
+  },
+  'Lower and upper bounds': {
+    objective: 'Find insertion boundaries in sorted data with a binary-search invariant.',
+    explain: 'A lower bound is the first index whose value is at least the target. An upper bound is the first index whose value is greater than the target. Both use a half-open search interval.',
+    example: 'For [1, 2, 2, 4], lowerBound(2) is 1 and upperBound(2) is 3.',
+    practice: 'Implement both bounds and test empty input, duplicates, and targets outside the array range.'
+  },
+  'Searching structured records': {
+    objective: 'Search records by an explicit field and preserve a clear result contract.',
+    explain: 'Choose the field used for comparison, define whether the first or all matches are needed, and distinguish missing data from a valid match.',
+    example: 'In a student list sorted by score, use the score field for a boundary search and return the matching student records.',
+    practice: 'Find the first student with a score of at least 75 in a score-sorted list; test ties and no qualifying student.'
+  },
+  'Rotated sorted arrays': {
+    objective: 'Search a rotated sorted array by identifying which half remains ordered.',
+    explain: "At each midpoint, at least one side of a distinct-value rotated array is sorted. Compare the target against that side's boundaries to discard half the candidates.",
+    example: 'In [6, 8, 1, 3, 5], the right half around the midpoint can be recognized as ordered and checked for the target.',
+    practice: 'Trace the interval changes when searching for 3 and for an absent value in [6, 8, 1, 3, 5].'
+  },
+  'Choosing the right search strategy': {
+    objective: 'Select a search approach based on ordering, data size, update frequency, and required result.',
+    explain: 'Linear search needs no preprocessing and supports unsorted data. Binary search is appropriate when data is sorted and the comparison boundary is reliable.',
+    example: 'For a one-time lookup in a tiny unsorted list, a linear scan is simpler; for many lookups in stable sorted data, binary search can reduce repeated work.',
+    practice: 'Compare linear and binary search for one lookup, repeated lookups, and data that changes after every query.'
+  },
+  'Analyze student performance data': {
+    objective: 'Build a report from student records with explicit rules, consistent output, and a single-pass statistics strategy.',
+    explain: 'Separate score aggregation, pass/fail rules, extrema, and summary output. Define empty-score and tie behavior before implementation.',
+    example: 'A student with scores [60, 80] has average 70; pass status also depends on the attendance threshold.',
+    practice: 'For DSP-054, write down the input shape and empty-list result, then identify the values to track in one traversal.'
+  },
+  'Detect duplicate transactions': {
+    objective: 'Report each repeated transaction ID once and in the order its repetition is first observed.',
+    explain: 'Use one Set for IDs already encountered and another for duplicates already reported. This preserves detection order while avoiding repeated scans.',
+    example: 'For ["A", "B", "A", "A", "B"], report ["A", "B"].',
+    practice: 'Trace the seen and reported sets for ["TX1", "TX2", "TX1", "TX3", "TX2"] and test empty input.'
+  },
+  'Search and rank inventory': {
+    objective: 'Filter inventory by availability, find matching items, and rank results with deterministic tie-breaking.',
+    explain: 'Keep filtering and ranking rules explicit. A comparator should define both the primary order and how equal values are resolved.',
+    example: 'Rank in-stock items by price ascending, then by name alphabetically when prices match.',
+    practice: 'Design the comparator and tests for an inventory list containing equal prices, out-of-stock items, and no matches.'
+  },
+  'Detect appointment conflicts': {
+    objective: 'Determine whether time intervals overlap using a precise boundary convention.',
+    explain: 'For half-open intervals [start, end), two appointments overlap when each starts before the other ends. This allows one appointment to begin exactly when another ends.',
+    example: '[09:00, 10:00) and [10:00, 10:30) do not overlap, while [09:00, 10:00) and [09:30, 10:15) do.',
+    practice: 'Write an overlap predicate and test touching boundaries, nested intervals, and appointments in reverse order.'
+  },
+  'Analyze logs and frequency patterns': {
+    objective: 'Summarize log events by category and identify the most frequent or exceptional patterns.',
+    explain: 'Parse the fields required by the report, count event types with a Map, and define how ties or malformed entries are handled.',
+    example: 'For ["INFO", "ERROR", "INFO"], the report records INFO: 2 and ERROR: 1.',
+    practice: 'Count event levels from a small log list and state how your function handles an empty list and an unknown level.'
+  },
+  'Build stable rankings with tie-breakers': {
+    objective: 'Rank records consistently while preserving a documented order for equal scores.',
+    explain: 'A stable ranking can use the original index as a final tie-breaker, making equal-score output deterministic even when sort stability is not assumed.',
+    example: 'If Ada and Ben both score 90 and appear in that order, the ranking keeps Ada before Ben.',
+    practice: 'Rank three records by score descending and original position for ties; verify that the input array is unchanged.'
+  },
+  'Integrate the full system into a final report': {
+    objective: 'Combine validation, aggregation, searching, ranking, and business rules into a coherent report.',
+    explain: 'Compose small tested functions, reuse computed values rather than recalculating them, and make output shape and edge-case behavior predictable.',
+    example: 'A course report can include totals, pass/fail counts, average score, top performers, and attendance risks from the same validated records.',
+    practice: 'Plan DSP-060 as independently testable steps, then define tests for empty input, threshold boundaries, and equal-score ranking.'
   }
 };
-
-const genericNotes = (module, title, index) => ({
-  objective: `Master “${title}” as part of ${module.title} and apply it to challenge work.`,
-  explain: `${title} is a core skill in this module. Learn the rule, identify when it applies, implement it in small steps, and verify it with edge cases before optimizing.`,
-  example: `Start with a small concrete input, trace the state after each important step, then translate that trace into JavaScript.`,
-  practice: `Create a small example for “${title}”, solve it without copying a solution, and explain why your approach works.`
-});
 
 const attachLessons = (module) => ({
   ...module,
   lessonDetails: module.lessons.map((title, index) => ({
     id: `${module.id}-L${index + 1}`,
     title,
-    ...((lessonNotes[title] || genericNotes(module, title, index)))
+    ...(lessonNotes[title] || (() => { throw new Error(`Missing lesson content for "${title}" in ${module.id}.`); })())
   }))
 });
 

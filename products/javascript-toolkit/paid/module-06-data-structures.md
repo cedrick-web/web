@@ -164,6 +164,13 @@ For large queues, use a head index instead of repeatedly shifting the array.
 ### Problem
 Implement queue simulation without using `shift()`.
 
+### Pseudocode
+1. Create an empty queue, a head index at zero, and a results list.
+2. For each operation, append enqueued values to the queue.
+3. For a dequeue or front operation, use the current head index when an item remains.
+4. Advance the head only after dequeue, and record `null` when the queue is empty.
+5. Return the results.
+
 ### Solution
 ```js
 function runFastQueue(operations) {
@@ -206,6 +213,12 @@ Design a compaction strategy that occasionally removes already-consumed entries.
 
 ### Problem
 Create a singly linked list from an array and return its values in order.
+
+### Pseudocode
+1. Start with an empty dummy node and set the tail to it.
+2. For each input value, create a node and attach it after the tail.
+3. Move the tail to the new node.
+4. Return the node after the dummy node.
 
 ### Solution
 ```js
@@ -256,6 +269,13 @@ A linked list stores relationships through references. Traversal follows `next` 
 ### Problem
 Remove the first node whose value equals `target` and return the new head.
 
+### Pseudocode
+1. Create a dummy node that points to the current head.
+2. Keep a pointer to the node before the one being inspected.
+3. If the next node matches the target, skip it and return the node after the dummy.
+4. Otherwise advance the previous pointer until the list ends.
+5. Return the original head when no match is found.
+
 ### Solution
 ```js
 function removeFirst(head, target) {
@@ -297,6 +317,11 @@ Removing the head is the reason the dummy node is useful.
 ### Problem
 Given a sequence of user IDs, return the number of unique visitors.
 
+### Pseudocode
+1. Create an empty Set.
+2. Add each user ID to the Set.
+3. Return the Set size.
+
 ### Solution
 ```js
 function countUniqueVisitors(ids) {
@@ -331,6 +356,12 @@ Return the unique IDs in their first-seen order.
 
 ### Problem
 Return the first value that appears twice while scanning from left to right. Return `null` if none repeats.
+
+### Pseudocode
+1. Create an empty Set of seen values.
+2. For each value from left to right, return it if it is already in the Set.
+3. Otherwise add it to the Set.
+4. Return `null` if the scan finishes without a repeat.
 
 ### Solution
 ```js
@@ -369,6 +400,11 @@ Return the index of the repeated occurrence instead of the value.
 ### Problem
 Return a `Map` containing the frequency of every word in an array.
 
+### Pseudocode
+1. Create an empty Map.
+2. For each word, increase its current count in the Map.
+3. Return the Map.
+
 ### Solution
 ```js
 function wordFrequency(words) {
@@ -403,6 +439,12 @@ function wordFrequency(words) {
 
 ### Problem
 Insert values into a binary search tree (BST). Smaller values go left, larger values go right. Ignore duplicates.
+
+### Pseudocode
+1. If the current node is empty, create and return a node for the value.
+2. If the value is smaller, recursively insert it into the left subtree.
+3. If the value is larger, recursively insert it into the right subtree.
+4. Leave the tree unchanged for a duplicate and return the current node.
 
 ### Solution
 ```js
@@ -447,6 +489,13 @@ A tree is not automatically fast. Its shape matters.
 Return the values of a BST using in-order traversal.
 
 For a valid BST, in-order traversal produces sorted values.
+
+### Pseudocode
+1. Create an empty result list.
+2. Visit the left subtree.
+3. Append the current node value.
+4. Visit the right subtree.
+5. Return the result list.
 
 ### Solution
 ```js

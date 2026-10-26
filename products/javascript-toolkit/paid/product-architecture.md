@@ -2,7 +2,9 @@
 
 ## Product status
 
-Production build: V1 in progress.
+Content status: V1 curriculum is complete and package QA verifies 8 populated modules, 51 lessons, and all 60 challenge records.
+
+Release status: Not launched. Build and verify the customer ZIP, review the final offer, connect and test the checkout/delivery provider, and complete the deployment runbook before selling.
 
 ## Core promise
 

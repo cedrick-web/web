@@ -11,7 +11,9 @@
     "build": "vite build",
     "qa": "node scripts/qa-challenges.mjs",
     "qa:paid": "node scripts/qa-paid-challenges.mjs",
-    "check": "npm run qa && npm run qa:paid && npm run qa:modules && npm run build",
+    "qa:package": "node scripts/qa-package.mjs",
+    "package": "npm run qa:package && node scripts/build-package.mjs",
+    "check": "npm run qa && npm run qa:paid && npm run qa:modules && npm run qa:package && npm run build",
     "preview": "vite preview",
     "qa:modules": "node scripts/qa-modules.mjs"
   },

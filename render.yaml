@@ -4,6 +4,9 @@ services:
     runtime: static
     buildCommand: cd website && npm install && npm run check && npm run build
     staticPublishPath: website/dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false
     routes:
       - type: rewrite
         source: /*

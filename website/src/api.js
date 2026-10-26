@@ -1,4 +1,7 @@
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const configuredApiUrl = (import.meta.env.VITE_API_URL || '').trim();
+const API_URL = configuredApiUrl
+  ? `${/^https?:\/\//i.test(configuredApiUrl) ? '' : 'https://'}${configuredApiUrl}`.replace(/\/$/, '')
+  : '';
 
 async function request(path, options = {}) {
   if (!API_URL) throw new Error('DevSprint API is not configured');

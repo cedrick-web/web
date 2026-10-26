@@ -18,17 +18,19 @@ Set these backend environment variables in Render:
 
 - `DATABASE_URL`
 - `JWT_SECRET`
-- `CORS_ORIGIN` = the deployed frontend URL
+- `CORS_ORIGIN` = the deployed frontend origin, including `https://`
 - `DB_SSL=true`
 - `DB_CONNECTION_LIMIT=5`
 
 Do not commit any of those secrets to GitHub.
 
+After both services have deployed, set `VITE_API_URL` on the frontend and `CORS_ORIGIN` on the API to each other's exact HTTPS origins, then redeploy both services.
+
 ## 3. Frontend
 
-The blueprint builds `website` and publishes `website/dist`.
+The blueprint builds `website` and publishes `website/dist`. Set `VITE_API_URL` on the `devsprint-web` static site to the deployed API origin, including `https://`.
 
-Later, when the API is wired into the learning UI, set `VITE_API_URL` to the Render API URL. Do not put secrets in `VITE_*` variables.
+Do not put secrets in `VITE_*` variables. This value is public and only identifies the API server.
 
 ## 4. First health test
 

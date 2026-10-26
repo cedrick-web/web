@@ -248,7 +248,7 @@ FUNCTION countFrequencies(numbers)
     RETURN frequencies
 ```
 
-## JavaScript solution
+## Solution
 
 ```js
 function countFrequencies(numbers) {
@@ -295,7 +295,7 @@ Return a new array containing each value only once, preserving the first-seen or
 [7, 7, 7] → [7]
 ```
 
-## JavaScript solution
+## Solution
 
 ```js
 function removeDuplicates(numbers) {
@@ -346,7 +346,7 @@ Use two passes:
 
 Separating counting from selection makes the reasoning clear.
 
-## JavaScript solution
+## Solution
 
 ```js
 function firstNonRepeating(text) {
@@ -410,7 +410,7 @@ needed = target - current
 
 Then ask whether `needed` has already been seen.
 
-## JavaScript solution
+## Solution
 
 ```js
 function twoSum(numbers, target) {
@@ -477,6 +477,51 @@ Example:
 
 The key can be `word.length`.
 
+## Pseudocode
+
+```text
+CREATE empty groups object
+FOR each word in input order
+    length = number of characters in word
+    IF groups does not contain length
+        CREATE empty list at groups[length]
+    APPEND word to groups[length]
+RETURN groups
+```
+
+## Solution
+
+```js
+function groupWordsByLength(words) {
+  const groups = {};
+
+  for (const word of words) {
+    const length = String(word).length;
+    if (!groups[length]) groups[length] = [];
+    groups[length].push(word);
+  }
+
+  return groups;
+}
+```
+
+## Tests
+
+```js
+JSON.stringify(groupWordsByLength(["cat", "to", "dog", "a"])) ===
+  '{"1":["a"],"2":["to"],"3":["cat","dog"]}';
+JSON.stringify(groupWordsByLength([])) === '{}';
+JSON.stringify(groupWordsByLength(["", "x"])) === '{"0":[""],"1":["x"]}';
+const words = ["ab", "c"];
+groupWordsByLength(words);
+JSON.stringify(words) === '["ab","c"]';
+```
+
+## Complexity
+
+- Time: **O(n + c)**, where `n` is the total number of characters and `c` is the number of words.
+- Space: **O(c)** for the grouped output.
+
 ---
 
 # Independent Challenge 12: Move Zeros
@@ -500,6 +545,53 @@ Examples:
 ### Hint
 
 Separate non-zero values from zeros, then combine the results.
+
+## Pseudocode
+
+```text
+CREATE empty non-zero list
+SET zero count to 0
+FOR each number
+    IF number equals zero
+        INCREASE zero count
+    OTHERWISE
+        APPEND number to non-zero list
+APPEND zero count zeros
+RETURN the new list
+```
+
+## Solution
+
+```js
+function moveZeros(numbers) {
+  const nonZeros = [];
+  let zeroCount = 0;
+
+  for (const number of numbers) {
+    if (number === 0) zeroCount++;
+    else nonZeros.push(number);
+  }
+
+  return nonZeros.concat(Array(zeroCount).fill(0));
+}
+```
+
+## Tests
+
+```js
+JSON.stringify(moveZeros([0, 1, 0, 3, 12])) === '[1,3,12,0,0]';
+JSON.stringify(moveZeros([0, 0])) === '[0,0]';
+JSON.stringify(moveZeros([1, 2])) === '[1,2]';
+JSON.stringify(moveZeros([])) === '[]';
+const numbers = [0, 2, 0, -1];
+moveZeros(numbers);
+JSON.stringify(numbers) === '[0,2,0,-1]';
+```
+
+## Complexity
+
+- Time: **O(n)**.
+- Space: **O(n)** for the returned array.
 
 ---
 

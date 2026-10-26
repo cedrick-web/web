@@ -19,4 +19,13 @@ Understand → Identify Input/Output → Break Down → Think → Algorithm → 
 - `marketing/` - acquisition and content system
 
 ## Status
-Phase 1: Foundation + website MVP.
+The foundation, website MVP, and V1 curriculum are implemented. The product is not yet publicly launch-ready: the customer package still needs its archive/manual review, production hosting and database need end-to-end verification, and checkout/delivery require real provider accounts and a successful test purchase.
+
+Run website QA and create the customer download from `website/`:
+
+```bash
+npm run check
+npm run package
+```
+
+See [business/phase-completion-roadmap-v1.md](business/phase-completion-roadmap-v1.md) for the ordered remaining launch and growth gates. Do not treat future product/platform phases as launch requirements; they are evidence-gated.
