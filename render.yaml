@@ -37,10 +37,6 @@ services:
       # Keep this in sync with the public URL of the static frontend.
       - key: CORS_ORIGIN
         value: https://devsprint-web.onrender.com
-      - key: PAYHIP_WEBHOOK_API_KEY
-        sync: false
-      - key: PAYHIP_PRODUCT_ID
-        sync: false
       # Generated automatically. Copy it privately into the Payhip webhook URL.
       - key: PAYHIP_WEBHOOK_SECRET
         generateValue: true
