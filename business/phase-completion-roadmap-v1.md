@@ -96,3 +96,18 @@ Still external or production-gated:
 - Configure the public checkout URL and complete a genuine controlled purchase/refund/delivery test.
 - Run deployed API and frontend smoke tests, because fake-database tests cannot establish production availability, network/CORS settings, real database compatibility, or payment-provider approval.
 - Complete a human proofread and open the generated ZIP before selling it.
+
+
+## Critical launch blocker: paid source is in a public repository
+
+Audit finding — 2026-10-28:
+
+The GitHub repository `cedrick-web/web` is public and contains the complete paid workbook sources under `products/javascript-toolkit/paid/`. Anyone can read or download those files directly from GitHub, regardless of whether the website marks the 50 paid challenges as toolkit-only. The ZIP build and checkout button do not protect these source files, and deleting them in a later commit would not remove them from public Git history.
+
+Before selling V1:
+- Move paid source content into a separate private repository or private release storage.
+- Update the packaging workflow to fetch those files using a least-privilege CI credential stored as a repository secret; never put credentials in a workflow file or frontend variable.
+- Verify the public repository and its reachable history no longer expose the paid source.
+- Build and inspect the customer archive from the private source pipeline, then run a test purchase and delivery.
+
+This requires private-repository/storage setup outside the current file-edit operations. Do not announce the product as protected or launch it until this blocker is resolved.
