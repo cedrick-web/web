@@ -66,7 +66,11 @@ export function validateEnvironment(env = process.env) {
   }
 
   const configuredPayhipKeys = PAYHIP_KEYS.filter(key => isNonEmptyString(env[key]));
-  if (configuredPayhipKeys.length > 0 && configuredPayhipKeys.length !== PAYHIP_KEYS.length) {
+  const paymentIdentityKeys = ['PAYHIP_WEBHOOK_API_KEY', 'PAYHIP_PRODUCT_ID'];
+  const configuredPaymentIdentity = paymentIdentityKeys.some(key => isNonEmptyString(env[key]));
+  // A generated endpoint secret alone is safe before the seller has a Payhip
+  // product. Once either provider identity value is set, require the full trio.
+  if (configuredPaymentIdentity && configuredPayhipKeys.length !== PAYHIP_KEYS.length) {
     const missing = PAYHIP_KEYS.filter(key => !isNonEmptyString(env[key]));
     problems.push(`Payhip webhook configuration is partial; set all three values: ${missing.join(', ')} still missing.`);
   }
