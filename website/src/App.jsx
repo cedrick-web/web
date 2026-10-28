@@ -4,6 +4,7 @@ import { getCompletedChallenges, saveCompletedChallenges } from './challengeUtil
 import { modules, tools, challengeTitles, methodSteps } from './learningData';
 import { getModuleContent, markdownBlocks } from './moduleContent';
 import { api, checkout } from './api';
+import { runChallengeInWorker } from './challengeRunner.js';
 import { clearSessionToken, readSessionToken, saveSessionToken } from './session';
 import AuthDialog from './AuthDialog';
 
@@ -223,7 +224,20 @@ function FreeChallenge({challenge,done,toggle}) {
   const [showHint,setShowHint]=useState(false);
   const [showPseudo,setShowPseudo]=useState(false);
   const [showSolution,setShowSolution]=useState(false);
-  const run=()=>{localStorage.setItem(storageKey,code);setResults(executeChallenge(challenge,code));};
+  const [running,setRunning]=useState(false);
+  const run=async()=>{
+    if(running) return;
+    try { localStorage.setItem(storageKey,code); } catch { /* Browser storage is optional; execution must still work. */ }
+    setRunning(true);
+    setResults([]);
+    try {
+      setResults(await runChallengeInWorker(challenge,code));
+    } catch(error) {
+      setResults([{pass:false,message:'Runner error: '+(error?.message||'Unable to execute challenge.')}]);
+    } finally {
+      setRunning(false);
+    }
+  };
   const allPassed=results.length>0&&results.every(x=>x.pass);
   return <div className="free-challenge-detail interactive-workspace">
     <div className="challenge-header"><div><span className="section-label">{challenge.difficulty}</span><h3>{challenge.title}</h3><p>{challenge.skill}</p></div><span className="access-pill free">FREE</span></div>
@@ -233,7 +247,7 @@ function FreeChallenge({challenge,done,toggle}) {
     {showPseudo&&<div className="hint-box"><b>Pseudocode</b><ol>{challenge.pseudocode.map(step=><li key={step}>{step}</li>)}</ol></div>}
     <label className="editor-label">YOUR JAVASCRIPT</label>
     <textarea className="code-editor" value={code} onChange={e=>setCode(e.target.value)} spellCheck="false" aria-label={`Code editor for ${challenge.title}`}/>
-    <div className="challenge-actions"><button className="button primary" onClick={run}>▶ Run tests</button><button className="button secondary" onClick={()=>{setCode(starter);setResults([]);localStorage.removeItem(storageKey)}}>Reset</button><button className="button secondary" onClick={()=>setShowSolution(x=>!x)}>{showSolution?'Hide solution':'Show solution'}</button>{allPassed&&<button className="button primary" onClick={()=>toggle(id)}>{done?'Completed ✓':'Mark complete'}</button>}</div>
+    <div className="challenge-actions"><button className="button primary" onClick={run} disabled={running}>{running?'Running tests…':'▶ Run tests'}</button><button className="button secondary" onClick={()=>{setCode(starter);setResults([]);localStorage.removeItem(storageKey)}}>Reset</button><button className="button secondary" onClick={()=>setShowSolution(x=>!x)}>{showSolution?'Hide solution':'Show solution'}</button>{allPassed&&<button className="button primary" onClick={()=>toggle(id)}>{done?'Completed ✓':'Mark complete'}</button>}</div>
     {results.length>0&&<div className={`test-results ${allPassed?'passed':'failed'}`}><div className="results-head"><strong>{allPassed?'All tests passed':'Keep debugging'}</strong><span>{results.filter(x=>x.pass).length}/{results.length} passed</span></div>{results.map((r,i)=><div className="test-result" key={`${id}-${i}`}><span>{r.pass?'✓':'✗'}</span><div><strong>Test {i+1}</strong><p>{r.message}</p></div></div>)}</div>}
     {showSolution&&<div className="solution-panel"><b>Reference solution</b><pre><code>{challenge.solution}</code></pre><p>Use this only after attempting the problem. The goal is to learn the reasoning, not collect solutions like trading cards.</p></div>}
     <div className="complexity-line"><strong>Complexity</strong><span>{challenge.complexity}</span></div>
@@ -252,36 +266,6 @@ function starterCode(challenge){const starters={
   9:'function isBalanced(text) {\n  // Write your solution here\n}',
   10:'function twoSum(numbers, target) {\n  // Write your solution here\n}',
 };return starters[challenge.id]||'// Write your solution here';}
-
-function executeChallenge(challenge,code){
-  const cases={
-    1:[[ [8,3,15,6,10],15 ],[[5],5],[[-4,-9,-2],-2],[[0,-1,-3],0]],
-    2:[[ [2,7,4,9,10],3 ],[[],0],[[1,3,5],0],[[-4,-3,0,2],3]],
-    3:[[ 'devsprint','tnirpsved' ],['',''],['a','a'],['DevSprint','tnirpSveD']],
-    4:[[ [-2,5,7,-1,3],15 ],[[-4,0],0],[[2],2],[[1,-1,0,3],4]],
-    5:[[ [4,8,2,8],8,1 ],[[1,2,3],9,-1],[[],1,-1],[[7,2,7],7,0]],
-    6:[[ [3,3,1,2,1],[3,1,2] ],[[],[]],[[5,5,5],[5]],[[2,3,2,4],[2,3,4]]],
-    7:[[ 'Level',true ],['hello',false],['',true],['RaceCar',true]],
-    8:[[ [10,4,10,7,8],8 ],[[5,5],null],[[-2,-8,-4],-4],[[0,-1],-1],[[0,0,-2],-2],[[],null]],
-    9:[[ '(()())',true ],['(()',false],[')(',false],['',true],['()()',true],['())(',false]],
-    10:[[ [2,7,11,15],9,[0,1] ],[[3,2,4],6,[1,2]],[[3,3],6,[0,1]],[[1,5],10,[]],[[-3,4,2,7],1,[0,1]]],
-  };
-  const fnNames={1:'findLargest',2:'countEven',3:'reverseString',4:'sumPositive',5:'findFirst',6:'removeDuplicates',7:'isPalindrome',8:'secondLargest',9:'isBalanced',10:'twoSum'};
-  try {
-    const fnName=fnNames[challenge.id];
-    const factory=new Function(`${code}\nreturn typeof ${fnName} === 'function' ? ${fnName} : null;`);
-    const fn=factory();
-    if(!fn) throw new Error(`Define ${fnName} before running tests.`);
-    return cases[challenge.id].map(test=>{
-      const expected=test[test.length-1];
-      const args=test.slice(0,-1);
-      let actual;
-      try { actual=fn(...args); } catch(error) { return {pass:false,message:`Runtime error: ${error.message}`}; }
-      const pass=JSON.stringify(actual)===JSON.stringify(expected);
-      return {pass,message:pass?'Passed':`Expected ${JSON.stringify(expected)}, received ${JSON.stringify(actual)}`};
-    });
-  } catch(error) { return [{pass:false,message:error.message}]; }
-}
 
 function Tools({tools,onTool}){return <Page><PageIntro label="LABS & TOOLS" title="Practice beyond the lesson." text="Open a real workspace instead of staring at a card pretending it is a feature."/><div className="tool-grid large">{tools.map(t=><ToolCard key={t.id} tool={t} onClick={()=>onTool(t)}/>)}</div><section className="tools-method"><span className="section-label">THE FULL LOOP</span><div className="roadmap"><b>Learn</b><i>→</i><b>Attempt</b><i>→</i><b>Test</b><i>→</i><b>Debug</b><i>→</i><b>Explain</b><i>→</i><b>Revise</b></div></section></Page>}
 
