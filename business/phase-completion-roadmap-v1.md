@@ -78,3 +78,21 @@ When evidence justifies the investment:
 ## Completion rule
 
 Do not label the business or product “fully complete” because code or a ZIP exists. Phase 3 is complete only after a verified customer can pay, receive the correct product, get support/refunds, and use the deployed service reliably. Phases 4 and 5 are growth opportunities, not prerequisites to selling V1.
+
+
+## Independent audit update — 2026-10-28
+
+Implemented on the audit-hardening branch:
+- The frontend restores the current browser-tab session from sessionStorage and clears invalid JWTs on authentication failure.
+- Module cards display real per-module challenge counts rather than a hard-coded zero.
+- The learning and challenge screens expose a checkout panel that only links out when a real HTTPS `VITE_CHECKOUT_URL` is configured.
+- The customer ZIP builder removes stale archives, validates the ZIP header, creates a SHA-256 sidecar, and is the single packaging implementation used by CI.
+- The backend checks the configured Payhip product ID before accepting a sale, fails closed when webhook configuration/product records are missing, records partial refunds separately, and does not restore a fully refunded entitlement when an old paid webhook is replayed.
+- Backend CI runs route-level tests for registration/login/progress and Payhip signature, product mismatch, refund, and replay behavior.
+
+Still external or production-gated:
+- Review and merge this branch into `devsprint-v1`, then merge the verified implementation into `main`.
+- Apply the current schema or migration to the actual production database and provision the real Payhip webhook key/product ID.
+- Configure the public checkout URL and complete a genuine controlled purchase/refund/delivery test.
+- Run deployed API and frontend smoke tests, because fake-database tests cannot establish production availability, network/CORS settings, real database compatibility, or payment-provider approval.
+- Complete a human proofread and open the generated ZIP before selling it.
