@@ -42,6 +42,13 @@ test('Payhip webhook values must be configured together', () => {
   }), /PAYHIP_WEBHOOK_SECRET must be at least 32 characters/);
 });
 
+test('a generated webhook secret alone does not block the free learning API', () => {
+  assert.doesNotThrow(() => validateEnvironment({
+    ...validBase,
+    PAYHIP_WEBHOOK_SECRET: 'a-generated-random-secret-with-at-least-32-characters',
+  }));
+});
+
 test('production can run the free learning API without partially configured payment credentials', () => {
   assert.doesNotThrow(() => validateEnvironment(validBase));
 });
