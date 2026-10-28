@@ -1,0 +1,36 @@
+name: Remove Previously Published DevSprint Package Artifacts
+
+on:
+  push:
+    branches: ['devsprint-v1']
+    paths:
+      - '.github/workflows/cleanup-public-package-artifacts.yml'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete retained public customer-package artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          repo="$GITHUB_REPOSITORY"
+          artifact_name="DevSprint-JavaScript-Problem-Solving-DSA-Toolkit-V1"
+          ids="$(gh api --paginate "repos/$repo/actions/artifacts?per_page=100" --jq ".artifacts[] | select(.name == \"$artifact_name\") | .id")"
+
+          if [[ -z "$ids" ]]; then
+            echo "No retained artifacts named $artifact_name were found."
+            exit 0
+          fi
+
+          while IFS= read -r artifact_id; do
+            [[ -n "$artifact_id" ]] || continue
+            gh api --method DELETE "repos/$repo/actions/artifacts/$artifact_id"
+            echo "Deleted retained product artifact: $artifact_id"
+          done <<< "$ids"
