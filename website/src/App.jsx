@@ -3,7 +3,8 @@ import { freeChallenges } from './challenges';
 import { getCompletedChallenges, saveCompletedChallenges } from './challengeUtils';
 import { modules, tools, challengeTitles, methodSteps } from './learningData';
 import { getModuleContent, markdownBlocks } from './moduleContent';
-import { api } from './api';
+import { api, checkout } from './api';
+import { clearSessionToken, readSessionToken, saveSessionToken } from './session';
 import AuthDialog from './AuthDialog';
 
 function buildLesson(module, index) {
@@ -33,18 +34,20 @@ export default function App() {
   const [view,setView]=useState('dashboard');
   const [module,setModule]=useState(null);
   const [lesson,setLesson]=useState(null);
-  const [lessonDone,setLessonDone]=useState(()=>JSON.parse(localStorage.getItem('devsprint.lessonDone')||'[]'));
+  const [lessonDone,setLessonDone]=useState(()=>{try{const value=JSON.parse(localStorage.getItem('devsprint.lessonDone')||'[]');return Array.isArray(value)?value:[]}catch{return []}});
   const [tool,setTool]=useState(null);
   const [completed,setCompleted]=useState(getCompletedChallenges);
   const [open,setOpen]=useState({});
-  const [token,setToken]=useState('');
+  const [token,setToken]=useState(readSessionToken);
   const [user,setUser]=useState(null);
   const [accountOpen,setAccountOpen]=useState(false);
+  const [sessionChecking,setSessionChecking]=useState(()=>Boolean(readSessionToken()));
   const [syncError,setSyncError]=useState('');
-  const freeById=useMemo(()=>new Map(freeChallenges.map(c=>[`DSP-${String(c.id).padStart(3,'0')}`,c])),[]);
+  const freeById=useMemo(()=>new Map(freeChallenges.map(c=>['DSP-'+String(c.id).padStart(3,'0'),c])),[]);
   useEffect(()=>{
-    if(!token) return undefined;
+    if(!token){setSessionChecking(false);return undefined;}
     let active=true;
+    setSessionChecking(true);
     Promise.all([api.me(token),api.progress(token)]).then(([account,result])=>{
       if(!active) return;
       setUser(account.user);
@@ -52,11 +55,14 @@ export default function App() {
       setSyncError('');
     }).catch(error=>{
       if(!active) return;
-      setSyncError(`Could not sync account progress: ${error.message}`);
+      setSyncError('Could not sync account progress: '+error.message);
       if(error.message==='Authentication required'||error.message==='Invalid or expired token'){
+        clearSessionToken();
         setToken('');
         setUser(null);
       }
+    }).finally(()=>{
+      if(active) setSessionChecking(false);
     });
     return ()=>{active=false};
   },[token]);
@@ -80,12 +86,18 @@ export default function App() {
     });
   };
   const handleAuthenticated=result=>{
+    if(!result?.token || !result?.user) {
+      setSyncError('The API returned an incomplete sign-in response.');
+      return;
+    }
+    saveSessionToken(result.token);
     setToken(result.token);
     setUser(result.user);
     setSyncError('');
     setAccountOpen(false);
   };
   const handleLogout=()=>{
+    clearSessionToken();
     setToken('');
     setUser(null);
     setCompleted(getCompletedChallenges());
@@ -99,7 +111,7 @@ export default function App() {
       <nav className="side-nav">{nav.map(([id,label])=><button key={id} className={view===id||(id==='modules'&&view==='module')||(id==='tools'&&view==='tool')?'active':''} onClick={()=>go(id)}>
         <span>{id==='dashboard'?'⌂':id==='modules'?'▦':id==='challenges'?'◇':id==='tools'?'⚙':'◔'}</span>{label}
       </button>)}</nav>
-      <button className="account-trigger" type="button" onClick={()=>setAccountOpen(true)}>{user?user.name:'Sign in'}</button>
+      <button className="account-trigger" type="button" disabled={sessionChecking} onClick={()=>setAccountOpen(true)}>{sessionChecking?'Checking…':user?user.name:'Sign in'}</button>
       <div className="sidebar-progress"><span>Your progress</span><strong>{done}/60</strong>
         <div className="progress-track"><div className="progress-fill" style={{width:`${percent}%`}}/></div><small>{percent}% complete</small>
       </div>
@@ -111,7 +123,7 @@ export default function App() {
         <div className="top-progress"><span>{done} completed</span><div className="mini-progress"><div style={{width:`${percent}%`}}/></div></div>
       </header>
       {syncError&&<div className="sync-alert" role="alert">{syncError}</div>}
-      {view==='dashboard'&&<Dashboard modules={modules} tools={tools} done={done} percent={percent} onModule={openModule} onTool={openTool} onView={go}/>}
+      {view==='dashboard'&&<Dashboard modules={modules} tools={tools} done={done} percent={percent} moduleDone={moduleDone} onModule={openModule} onTool={openTool} onView={go}/>}
       {view==='modules'&&<Modules modules={modules} moduleDone={moduleDone} onModule={openModule}/>}
       {view==='module'&&module&&<ModuleDetail module={module} completed={completed} moduleDone={moduleDone(module)} titles={challengeTitles} freeById={freeById} open={open} setOpen={setOpen} back={()=>go('modules')} challenges={()=>go('challenges')} onLesson={openLesson} lessonDone={lessonDone}/>}
       {view==='lesson'&&module&&lesson&&<LessonDetail module={module} lesson={lesson} done={lessonDone.includes(lesson.id)} toggle={()=>toggleLesson(lesson.id)} back={()=>openModule(module)} challenges={()=>go('challenges')} lessonDone={lessonDone}/>}
@@ -124,7 +136,27 @@ export default function App() {
   </div>;
 }
 
-function Dashboard({modules,tools,done,percent,onModule,onTool,onView}){return <Page><section className="welcome"><div><span className="eyebrow">DEVSPRINT LEARNING SPACE</span><h1>Build the habit of <span>solving problems.</span></h1><p>Learn the full loop: understand, break down, design, implement, test, debug, analyze, and improve.</p></div><div className="hero-progress"><div className="ring" style={{background:`conic-gradient(#8fd3ff ${percent}%,#202a38 0)`}}><strong>{percent}%</strong></div><span>course progress</span></div></section><section className="stats-grid"><Stat value="8" label="Modules"/><Stat value="60" label="Challenges"/><Stat value="4" label="Practice tools"/><Stat value={done} label="Completed"/></section><section className="continue-card"><div><span className="section-label">START HERE</span><h2>Module 1 · Think Like a Programmer</h2><p>Start with reasoning before syntax.</p></div><button className="button primary" onClick={()=>onModule(modules[0])}>Start learning →</button></section><SectionHeader title="Your curriculum" action="View all modules" onAction={()=>onView('modules')}/><div className="module-grid">{modules.map(m=><ModuleCard key={m.id} module={m} completed={0} onClick={()=>onModule(m)}/>)}</div><SectionHeader title="Practice tools" action="Open tools" onAction={()=>onView('tools')}/><div className="tool-grid">{tools.map(t=><ToolCard key={t.id} tool={t} onClick={()=>onTool(t)}/>)}</div></Page>}
+function CheckoutCard({compact=false}) {
+  const url=checkout.url;
+  return <section className={'checkout-card'+(compact?' compact':'')}>
+    <div className="checkout-copy">
+      <span className="eyebrow">DEVSPRINT V1 TOOLKIT</span>
+      <h2>Go beyond the 10 free challenges.</h2>
+      <p>Get the eight workbooks, all 60 guided challenge records, reference solutions, debugging lab, assessment simulator, tests and final project in one downloadable toolkit.</p>
+      <div className="checkout-tags"><span>8 modules</span><span>60 challenges</span><span>Downloadable product</span></div>
+    </div>
+    <div className="checkout-action">
+      {url
+        ? <a className="button primary" href={url} target="_blank" rel="noopener noreferrer">Get the V1 toolkit →</a>
+        : <>
+            <button className="button secondary" type="button" disabled>Checkout not configured</button>
+            <p role="status">Secure checkout will appear here after the real Payhip product URL is configured as VITE_CHECKOUT_URL.</p>
+          </>}
+    </div>
+  </section>;
+}
+
+function Dashboard({modules,tools,done,percent,moduleDone,onModule,onTool,onView}){return <Page><section className="welcome"><div><span className="eyebrow">DEVSPRINT LEARNING SPACE</span><h1>Build the habit of <span>solving problems.</span></h1><p>Learn the full loop: understand, break down, design, implement, test, debug, analyze, and improve.</p></div><div className="hero-progress"><div className="ring" style={{background:`conic-gradient(#8fd3ff ${percent}%,#202a38 0)`}}><strong>{percent}%</strong></div><span>course progress</span></div></section><section className="stats-grid"><Stat value="8" label="Modules"/><Stat value="60" label="Challenges"/><Stat value="4" label="Practice tools"/><Stat value={done} label="Completed"/></section><section className="continue-card"><div><span className="section-label">START HERE</span><h2>Module 1 · Think Like a Programmer</h2><p>Start with reasoning before syntax.</p></div><button className="button primary" onClick={()=>onModule(modules[0])}>Start learning →</button></section><CheckoutCard compact/><SectionHeader title="Your curriculum" action="View all modules" onAction={()=>onView('modules')}/><div className="module-grid">{modules.map(m=><ModuleCard key={m.id} module={m} completed={moduleDone(m)} onClick={()=>onModule(m)}/>)}</div><SectionHeader title="Practice tools" action="Open tools" onAction={()=>onView('tools')}/><div className="tool-grid">{tools.map(t=><ToolCard key={t.id} tool={t} onClick={()=>onTool(t)}/>)}</div></Page>}
 
 function Modules({modules,moduleDone,onModule}){return <Page><PageIntro label="CURRICULUM" title="Eight modules. One repeatable system." text="Each module contains a learning roadmap, lessons, challenge range, and practice path."/><div className="method-strip">{methodSteps.map(x=><div key={x[0]}><b>{x[0]}</b><strong>{x[1]}</strong><span>{x[2]}</span></div>)}</div><div className="module-grid large">{modules.map(m=><ModuleCard key={m.id} module={m} completed={moduleDone(m)} onClick={()=>onModule(m)}/>)}</div></Page>}
 
@@ -180,7 +212,7 @@ function FullLessonContent({lesson}) {
   </div>;
 }
 
-function Challenges({titles,freeById,completed,open,setOpen,toggle}){return <Page><PageIntro label="PRACTICE" title="60 challenges. Not 60 decorative boxes." text="The first 10 are interactive on the public site. The remaining 50 are mapped to the paid toolkit so the curriculum structure is visible without publishing the customer workbook."/><div className="challenge-toolbar"><span>{completed.length}/60 completed</span><span>10 interactive</span><span>50 toolkit</span></div><div className="challenge-browser">{titles.map(c=>{const free=freeById.get(c.id),isDone=completed.includes(c.id);return <div key={c.id} className={`browser-row ${open[c.id]?'open':''}`}><button className="browser-main" disabled={!free} onClick={()=>setOpen(x=>({...x,[c.id]:!x[c.id]}))}><span className="browser-id">{c.id}</span><strong>{c.title}</strong><span className={`access-pill ${free?'free':''}`}>{free?'FREE':'TOOLKIT'}</span><span className="completion-state">{isDone?'✓':'○'}</span></button>{open[c.id]&&free&&<FreeChallenge challenge={free} done={isDone} toggle={toggle}/>}</div>})}</div></Page>}
+function Challenges({titles,freeById,completed,open,setOpen,toggle}){return <Page><PageIntro label="PRACTICE" title="60 challenges. Not 60 decorative boxes." text="The first 10 are interactive on the public site. The remaining 50 are mapped to the paid toolkit so the curriculum structure is visible without publishing the customer workbook."/><CheckoutCard/><div className="challenge-toolbar"><span>{completed.length}/60 completed</span><span>10 interactive</span><span>50 toolkit</span></div><div className="challenge-browser">{titles.map(c=>{const free=freeById.get(c.id),isDone=completed.includes(c.id);return <div key={c.id} className={`browser-row ${open[c.id]?'open':''}`}><button className="browser-main" disabled={!free} onClick={()=>setOpen(x=>({...x,[c.id]:!x[c.id]}))}><span className="browser-id">{c.id}</span><strong>{c.title}</strong><span className={`access-pill ${free?'free':''}`}>{free?'FREE':'TOOLKIT'}</span><span className="completion-state">{isDone?'✓':'○'}</span></button>{open[c.id]&&free&&<FreeChallenge challenge={free} done={isDone} toggle={toggle}/>}</div>})}</div></Page>}
 
 function FreeChallenge({challenge,done,toggle}) {
   const id=`DSP-${String(challenge.id).padStart(3,'0')}`;
