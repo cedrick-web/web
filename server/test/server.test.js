@@ -151,6 +151,7 @@ async function withApi({ db = makeFakeDb(), env = {}, run }) {
     env: {
       NODE_ENV: 'test',
       PAYHIP_WEBHOOK_API_KEY: 'test-payhip-api-key',
+      PAYHIP_WEBHOOK_SECRET: 'test-payhip-webhook-endpoint-secret-32chars',
       PAYHIP_PRODUCT_ID: 'ds-v1-product-id',
       ...env,
     },
@@ -249,7 +250,7 @@ test('progress rejects out-of-range challenge IDs and invalid statuses', async (
 test('invalid Payhip signature is rejected before database writes', async () => {
   await withApi({ run: async ({ base, db }) => {
     const payload = signedPayload({ signature: 'not-a-valid-signature' });
-    const result = await jsonRequest(base, '/api/payments/payhip/webhook', {
+    const result = await jsonRequest(base, '/api/payments/payhip/webhook?secret=test-payhip-webhook-endpoint-secret-32chars', {
       method: 'POST', body: JSON.stringify(payload),
     });
     assert.equal(result.response.status, 401);
@@ -260,7 +261,7 @@ test('invalid Payhip signature is rejected before database writes', async () => 
 
 test('Payhip events for a different product are ignored', async () => {
   await withApi({ run: async ({ base, db }) => {
-    const result = await jsonRequest(base, '/api/payments/payhip/webhook', {
+    const result = await jsonRequest(base, '/api/payments/payhip/webhook?secret=test-payhip-webhook-endpoint-secret-32chars', {
       method: 'POST',
       body: JSON.stringify(signedPayload({ items: [{ product_id: 'some-other-product' }] })),
     });
@@ -275,7 +276,7 @@ test('Payhip paid events grant receipt and entitlement; partial/full refunds and
   await withApi({ run: async ({ base, db }) => {
     db.state.users.push({ id: 11, name: 'Buyer', email: 'buyer@example.com', password_hash: '', role: 'student' });
 
-    const paid = await jsonRequest(base, '/api/payments/payhip/webhook', {
+    const paid = await jsonRequest(base, '/api/payments/payhip/webhook?secret=test-payhip-webhook-endpoint-secret-32chars', {
       method: 'POST', body: JSON.stringify(signedPayload()),
     });
     assert.equal(paid.response.status, 200);
@@ -284,7 +285,7 @@ test('Payhip paid events grant receipt and entitlement; partial/full refunds and
     assert.equal(db.state.receipts.length, 1);
     assert.equal(db.state.entitlements.length, 1);
 
-    const partial = await jsonRequest(base, '/api/payments/payhip/webhook', {
+    const partial = await jsonRequest(base, '/api/payments/payhip/webhook?secret=test-payhip-webhook-endpoint-secret-32chars', {
       method: 'POST', body: JSON.stringify(signedPayload({ type: 'refunded', amount_refunded: 200 })),
     });
     assert.equal(partial.response.status, 200);
@@ -293,7 +294,7 @@ test('Payhip paid events grant receipt and entitlement; partial/full refunds and
     assert.equal(db.state.entitlements.length, 1);
     assert.equal(db.state.receipts[0].status, 'issued');
 
-    const full = await jsonRequest(base, '/api/payments/payhip/webhook', {
+    const full = await jsonRequest(base, '/api/payments/payhip/webhook?secret=test-payhip-webhook-endpoint-secret-32chars', {
       method: 'POST', body: JSON.stringify(signedPayload({ type: 'refunded', amount_refunded: 900 })),
     });
     assert.equal(full.response.status, 200);
@@ -302,7 +303,7 @@ test('Payhip paid events grant receipt and entitlement; partial/full refunds and
     assert.equal(db.state.entitlements.length, 0);
     assert.equal(db.state.receipts[0].status, 'voided');
 
-    const replay = await jsonRequest(base, '/api/payments/payhip/webhook', {
+    const replay = await jsonRequest(base, '/api/payments/payhip/webhook?secret=test-payhip-webhook-endpoint-secret-32chars', {
       method: 'POST', body: JSON.stringify(signedPayload()),
     });
     assert.equal(replay.response.status, 200);
@@ -326,7 +327,7 @@ test('replayed full-refund event completes cleanup if prior processing left acce
     });
     db.state.entitlements.push({ user_id: 11, product_id: 7, source_order_id: 41 });
 
-    const result = await jsonRequest(base, '/api/payments/payhip/webhook', {
+    const result = await jsonRequest(base, '/api/payments/payhip/webhook?secret=test-payhip-webhook-endpoint-secret-32chars', {
       method: 'POST',
       body: JSON.stringify(signedPayload({ type: 'refunded', amount_refunded: 900 })),
     });
@@ -335,5 +336,79 @@ test('replayed full-refund event completes cleanup if prior processing left acce
     assert.equal(result.body.alreadyProcessed, true);
     assert.equal(db.state.receipts[0].status, 'voided');
     assert.equal(db.state.entitlements.length, 0);
+  }});
+});
+
+
+test('Payhip webhook rejects requests without the separate endpoint secret before database access', async () => {
+  await withApi({ run: async ({ base, db }) => {
+    const result = await jsonRequest(base, '/api/payments/payhip/webhook', {
+      method: 'POST',
+      body: JSON.stringify(signedPayload()),
+    });
+    assert.equal(result.response.status, 401);
+    assert.equal(result.body.error, 'Invalid webhook endpoint secret');
+    assert.equal(db.state.queries.length, 0);
+  }});
+});
+
+test('archived products still process full refunds and revoke access', async () => {
+  await withApi({ run: async ({ base, db }) => {
+    db.state.products[0].status = 'archived';
+    db.state.orders.push({
+      id: 42, user_id: 11, product_id: 7, provider: 'payhip',
+      provider_transaction_id: 'txn-devsprint-001', amount_minor: 900,
+      refunded_amount_minor: 0, currency: 'USD', status: 'paid',
+    });
+    db.state.receipts.push({
+      order_id: 42, receipt_number: 'DSR-archived', customer_name: 'Buyer',
+      customer_email: 'buyer@example.com', amount_minor: 900, currency: 'USD', status: 'issued',
+    });
+    db.state.entitlements.push({ user_id: 11, product_id: 7, source_order_id: 42 });
+
+    const result = await jsonRequest(base, '/api/payments/payhip/webhook?secret=test-payhip-webhook-endpoint-secret-32chars', {
+      method: 'POST',
+      body: JSON.stringify(signedPayload({ type: 'refunded', amount_refunded: 900 })),
+    });
+    assert.equal(result.response.status, 200);
+    assert.equal(db.state.orders[0].status, 'refunded');
+    assert.equal(db.state.receipts[0].status, 'voided');
+    assert.equal(db.state.entitlements.length, 0);
+  }});
+});
+
+test('out-of-order smaller refund events never roll the recorded refund amount backwards', async () => {
+  await withApi({ run: async ({ base, db }) => {
+    const paid = await jsonRequest(base, '/api/payments/payhip/webhook?secret=test-payhip-webhook-endpoint-secret-32chars', {
+      method: 'POST', body: JSON.stringify(signedPayload()),
+    });
+    assert.equal(paid.response.status, 200);
+    assert.equal(db.state.orders[0].amount_minor, 900);
+
+    const partial = await jsonRequest(base, '/api/payments/payhip/webhook?secret=test-payhip-webhook-endpoint-secret-32chars', {
+      method: 'POST', body: JSON.stringify(signedPayload({ type: 'refunded', amount_refunded: 500 })),
+    });
+    assert.equal(partial.response.status, 200);
+    assert.equal(db.state.orders[0].refunded_amount_minor, 500);
+
+    const stale = await jsonRequest(base, '/api/payments/payhip/webhook?secret=test-payhip-webhook-endpoint-secret-32chars', {
+      method: 'POST', body: JSON.stringify(signedPayload({ type: 'refunded', amount_refunded: 200 })),
+    });
+    assert.equal(stale.response.status, 200);
+    assert.equal(stale.body.ignored, true);
+    assert.equal(stale.body.reason, 'stale_refund_event');
+    assert.equal(db.state.orders[0].refunded_amount_minor, 500);
+    assert.equal(db.state.orders[0].status, 'partially_refunded');
+  }});
+});
+
+test('archived products reject new paid events', async () => {
+  await withApi({ run: async ({ base, db }) => {
+    db.state.products[0].status = 'archived';
+    const result = await jsonRequest(base, '/api/payments/payhip/webhook?secret=test-payhip-webhook-endpoint-secret-32chars', {
+      method: 'POST', body: JSON.stringify(signedPayload({ id: 'txn-after-archive' })),
+    });
+    assert.equal(result.response.status, 503);
+    assert.equal(db.state.orders.length, 0);
   }});
 });

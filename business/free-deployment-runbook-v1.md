@@ -69,3 +69,16 @@ No paid custom domain is required for V1. Use the free provider subdomains until
 - Configure `PAYHIP_WEBHOOK_API_KEY` and the exact DevSprint product ID as `PAYHIP_PRODUCT_ID` in the backend host. Never put either value in the frontend or Git.
 - Configure `VITE_CHECKOUT_URL` only after the real Payhip product page is published and the hosted checkout has been tested. It must be an HTTPS URL.
 - Backend automated tests run without production credentials using a fake database. They verify API routes and Payhip event handling, but do not replace a live database smoke test.
+
+
+## Payhip webhook verification hardening
+
+The API verifies the SHA-256 hash of the Payhip developer API key and the exact configured `PAYHIP_PRODUCT_ID`. Payhip's documented signature is a static hash of the API key, not a MAC of the individual payload. For that reason this implementation also requires a separate random endpoint secret.
+
+1. Generate a unique secret with at least 32 characters and store it only in the backend's `PAYHIP_WEBHOOK_SECRET` variable.
+2. Configure the Payhip webhook endpoint as `https://YOUR-API-HOST/api/payments/payhip/webhook?secret=YOUR_RANDOM_SECRET`. Do not put this URL in frontend code or public repository files.
+3. Also configure `PAYHIP_WEBHOOK_API_KEY` and the exact `PAYHIP_PRODUCT_ID` for the DevSprint item. Never use a guessed product ID.
+4. A payment event for a different product is ignored. New sales are rejected if the DevSprint product is archived or inactive. Refunds continue to be processed after a product is archived.
+5. Refund events with a smaller cumulative refund total than an already recorded event are treated as stale and cannot roll the refund record backwards.
+
+Payhip documents transaction IDs, product IDs, event types, the signature field, and that prices are in cents/pennies in its [official webhook documentation](https://help.payhip.com/article/115-webhooks). The additional endpoint secret is a DevSprint-side control to strengthen authenticity checks; it is not a Payhip-provided signature field.
