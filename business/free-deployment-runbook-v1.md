@@ -12,25 +12,22 @@ Create a TiDB Cloud Starter instance on the free quota.
 
 ## 2. Backend
 
-Create the Render Blueprint from the repository's `render.yaml`.
+The Render Blueprint automatically generates `JWT_SECRET`, sets the default `CORS_ORIGIN` to `https://devsprint-web.onrender.com`, and checks the production environment before starting the API.
 
-Set these backend environment variables in Render:
-
-- `DATABASE_URL`
-- `JWT_SECRET`
-- `CORS_ORIGIN` = the deployed frontend origin, including `https://`
+The following values still need real, private database account data:
+- `DATABASE_URL`: the actual TiDB/MySQL TLS connection string.
 - `DB_SSL=true`
 - `DB_CONNECTION_LIMIT=5`
 
-Do not commit any of those secrets to GitHub.
+The Payhip API key and product ID are deliberately not required to deploy the free learning API. Until those values are added to the backend environment, the Payhip webhook fails closed and paid checkout remains disabled. Do not commit any credentials to GitHub.
 
-After both services have deployed, set `VITE_API_URL` on the frontend and `CORS_ORIGIN` on the API to each other's exact HTTPS origins, then redeploy both services.
-
+If using a custom domain or a different Render hostname, update `CORS_ORIGIN` to the exact frontend HTTPS origin and `VITE_API_URL` to the API HTTPS origin, then rebuild/redeploy the frontend and API.
+ 
 ## 3. Frontend
 
-The blueprint builds `website` and publishes `website/dist`. Set `VITE_API_URL` on the `devsprint-web` static site to the deployed API origin, including `https://`.
+The Blueprint builds `website` with deterministic `npm ci` dependencies and publishes `website/dist`. The static site uses the default API hostname above; it does not require a manual `VITE_API_URL` entry when using the default Render URLs.
 
-Do not put secrets in `VITE_*` variables. This value is public and only identifies the API server.
+Do not put secrets in `VITE_*` variables. These values are bundled into public browser code.
 
 ## 4. First health test
 
@@ -75,9 +72,9 @@ No paid custom domain is required for V1. Use the free provider subdomains until
 
 The API verifies the SHA-256 hash of the Payhip developer API key and the exact configured `PAYHIP_PRODUCT_ID`. Payhip's documented signature is a static hash of the API key, not a MAC of the individual payload. For that reason this implementation also requires a separate random endpoint secret.
 
-1. Generate a unique secret with at least 32 characters and store it only in the backend's `PAYHIP_WEBHOOK_SECRET` variable.
-2. Configure the Payhip webhook endpoint as `https://YOUR-API-HOST/api/payments/payhip/webhook?secret=YOUR_RANDOM_SECRET`. Do not put this URL in frontend code or public repository files.
-3. Also configure `PAYHIP_WEBHOOK_API_KEY` and the exact `PAYHIP_PRODUCT_ID` for the DevSprint item. Never use a guessed product ID.
+1. Render generates `PAYHIP_WEBHOOK_SECRET` for the backend service. Treat this value as a password.
+2. After the actual Payhip product exists, add `PAYHIP_WEBHOOK_API_KEY` and the exact `PAYHIP_PRODUCT_ID` to the backend service's environment settings. Those two real provider values are intentionally not fabricated in source code.
+3. Configure the Payhip webhook endpoint as `https://YOUR-API-HOST/api/payments/payhip/webhook?secret=URL_ENCODED_SECRET`. URL-encode the generated secret before placing it in the query string (for example with `encodeURIComponent(secret)` in JavaScript), because generated secrets may contain `+`, `/`, and `=`. Never put this URL or secret in the public repository or a public chat.
 4. A payment event for a different product is ignored. New sales are rejected if the DevSprint product is archived or inactive. Refunds continue to be processed after a product is archived.
 5. Refund events with a smaller cumulative refund total than an already recorded event are treated as stale and cannot roll the refund record backwards.
 

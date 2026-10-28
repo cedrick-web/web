@@ -2,13 +2,13 @@ services:
   - type: web
     name: devsprint-web
     runtime: static
-    buildCommand: cd website && npm install && npm run check && npm run build
+    buildCommand: cd website && npm ci && npm run check
     staticPublishPath: website/dist
     envVars:
+      # Render's default service hostname is devsprint-web.onrender.com.
+      # This is public configuration, not a secret.
       - key: VITE_API_URL
-        sync: false
-      - key: VITE_CHECKOUT_URL
-        sync: false
+        value: https://devsprint-api.onrender.com
     routes:
       - type: rewrite
         source: /*
@@ -31,13 +31,12 @@ services:
         value: 5
       - key: DATABASE_URL
         sync: false
+      # Render generates a private 256-bit secret automatically.
       - key: JWT_SECRET
-        sync: false
+        generateValue: true
+      # Keep this in sync with the public URL of the static frontend.
       - key: CORS_ORIGIN
-        sync: false
-      - key: PAYHIP_WEBHOOK_API_KEY
-        sync: false
-      - key: PAYHIP_PRODUCT_ID
-        sync: false
+        value: https://devsprint-web.onrender.com
+      # Generated automatically. Copy it privately into the Payhip webhook URL.
       - key: PAYHIP_WEBHOOK_SECRET
-        sync: false
+        generateValue: true
