@@ -91,8 +91,12 @@ Implemented on the audit-hardening branch:
 - Backend CI runs route-level tests for registration/login/progress and Payhip signature, product mismatch, refund, and replay behavior.
 
 Still external or production-gated:
-- Review and merge this branch into `devsprint-v1`, then merge the verified implementation into `main`.
-- Apply the current schema or migration to the actual production database and provision the real Payhip webhook key/product ID.
+- [x] Merge the tested implementation into `devsprint-v1` and the repository default branch `main`.
+- [x] Move learner-submitted challenge code into a disposable Web Worker with a 1.5-second termination deadline; runner QA is part of `npm run check`.
+- [x] Stop uploading the paid toolkit ZIP as a public Actions artifact and remove retained artifacts bearing the toolkit artifact name.
+- [x] Website QA and backend QA passed on the promoted `main` commit on 2026-10-28.
+- [ ] Remediate paid-source exposure: the repository remains public and the paid workbook is present in Git history. Make the repository private or move paid content to private storage, then remove exposed history/artifacts as appropriate. This remains a hard launch blocker; code changes alone cannot reverse prior public access.
+- [ ] Apply the current schema or migration to the actual production database and provision the real Payhip webhook key/product ID.
 - Configure the public checkout URL and complete a genuine controlled purchase/refund/delivery test.
 - Run deployed API and frontend smoke tests, because fake-database tests cannot establish production availability, network/CORS settings, real database compatibility, or payment-provider approval.
 - Complete a human proofread and open the generated ZIP before selling it.
