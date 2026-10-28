@@ -75,14 +75,20 @@ export default function App() {
   const openModule=m=>{setModule(m);setTool(null);setView('module')};
   const openTool=t=>{setTool(t);setModule(null);setView('tool')};
   const toggle=id=>{
-    const next=completed.includes(id)?completed.filter(x=>x!==id):[...completed,id];
+    const wasCompleted=completed.includes(id);
+    const next=wasCompleted?completed.filter(x=>x!==id):[...completed,id];
     setCompleted(next);
     if(!token){
       saveCompletedChallenges(next);
       return;
     }
     api.saveProgress(token,id,next.includes(id)?'completed':'started').catch(error=>{
-      setCompleted(completed);
+      // Roll back only this challenge. Replacing the whole list with the stale
+      // render snapshot can erase other progress changes made while requests race.
+      setCompleted(current=>{
+        if(wasCompleted) return current.includes(id)?current:[...current,id];
+        return current.filter(challengeId=>challengeId!==id);
+      });
       setSyncError(`Could not save progress: ${error.message}`);
     });
   };
