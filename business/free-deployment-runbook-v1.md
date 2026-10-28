@@ -12,20 +12,17 @@ Create a TiDB Cloud Starter instance on the free quota.
 
 ## 2. Backend
 
-Create the Render Blueprint from the repository's `render.yaml`.
+The Render Blueprint automatically generates `JWT_SECRET`, sets the default `CORS_ORIGIN` to `https://devsprint-web.onrender.com`, and checks the production environment before starting the API.
 
-The Render Blueprint now sets `VITE_API_URL=https://devsprint-api.onrender.com` and `CORS_ORIGIN=https://devsprint-web.onrender.com` for the default Render hostnames. It asks Render to generate `JWT_SECRET` and `PAYHIP_WEBHOOK_SECRET` automatically.
-
-The following values still require real account-specific data and must never be invented or committed:
+The following values still need real, private database account data:
 - `DATABASE_URL`: the actual TiDB/MySQL TLS connection string.
-- `PAYHIP_WEBHOOK_API_KEY`: the real Payhip developer API key.
-- `PAYHIP_PRODUCT_ID`: the exact product ID from the actual Payhip product.
-- `VITE_CHECKOUT_URL`: the real HTTPS Payhip product URL. The checkout card intentionally remains disabled until this exists.
+- `DB_SSL=true`
+- `DB_CONNECTION_LIMIT=5`
 
-Keep `DB_SSL=true` and `DB_CONNECTION_LIMIT=5`. Do not commit any credentials to GitHub. If you use a custom domain or Render assigns a different host, update the API's `CORS_ORIGIN` and frontend `VITE_API_URL` to the exact deployed HTTPS origins, then redeploy.
+The Payhip API key and product ID are deliberately not required to deploy the free learning API. Until those values are added to the backend environment, the Payhip webhook fails closed and paid checkout remains disabled. Do not commit any credentials to GitHub.
+
+If using a custom domain or a different Render hostname, update `CORS_ORIGIN` to the exact frontend HTTPS origin and `VITE_API_URL` to the API HTTPS origin, then rebuild/redeploy the frontend and API.
  
-The API now validates production configuration before starting and reports missing/invalid settings explicitly. Backend CI verifies those checks. A production deployment without a MySQL URL, valid JWT secret or exact HTTPS CORS origin will deliberately fail its startup check rather than appear healthy while account services are broken.
-
 ## 3. Frontend
 
 The Blueprint builds `website` with deterministic `npm ci` dependencies and publishes `website/dist`. The static site uses the default API hostname above; it does not require a manual `VITE_API_URL` entry when using the default Render URLs.
@@ -75,9 +72,9 @@ No paid custom domain is required for V1. Use the free provider subdomains until
 
 The API verifies the SHA-256 hash of the Payhip developer API key and the exact configured `PAYHIP_PRODUCT_ID`. Payhip's documented signature is a static hash of the API key, not a MAC of the individual payload. For that reason this implementation also requires a separate random endpoint secret.
 
-1. Generate a unique secret with at least 32 characters and store it only in the backend's `PAYHIP_WEBHOOK_SECRET` variable.
-2. Configure the Payhip webhook endpoint as `https://YOUR-API-HOST/api/payments/payhip/webhook?secret=YOUR_RANDOM_SECRET`. Do not put this URL in frontend code or public repository files.
-3. Also configure `PAYHIP_WEBHOOK_API_KEY` and the exact `PAYHIP_PRODUCT_ID` for the DevSprint item. Never use a guessed product ID.
+1. Render generates `PAYHIP_WEBHOOK_SECRET` for the backend service. Treat this value as a password.
+2. After the actual Payhip product exists, add `PAYHIP_WEBHOOK_API_KEY` and the exact `PAYHIP_PRODUCT_ID` to the backend service's environment settings. Those two real provider values are intentionally not fabricated in source code.
+3. Configure the Payhip webhook endpoint as `https://YOUR-API-HOST/api/payments/payhip/webhook?secret=URL_ENCODED_SECRET`. URL-encode the generated secret before placing it in the query string (for example with `encodeURIComponent(secret)` in JavaScript), because generated secrets may contain `+`, `/`, and `=`. Never put this URL or secret in the public repository or a public chat.
 4. A payment event for a different product is ignored. New sales are rejected if the DevSprint product is archived or inactive. Refunds continue to be processed after a product is archived.
 5. Refund events with a smaller cumulative refund total than an already recorded event are treated as stale and cannot roll the refund record backwards.
 
