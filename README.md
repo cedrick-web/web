@@ -19,7 +19,9 @@ Understand → Identify Input/Output → Break Down → Think → Algorithm → 
 - `marketing/` - acquisition and content system
 
 ## Status
-The foundation, website MVP, and V1 curriculum are implemented. The product is not yet publicly launch-ready: the customer package still needs its archive/manual review, production hosting and database need end-to-end verification, and checkout/delivery require real provider accounts and a successful test purchase.
+The website foundation and V1 curriculum are implemented, but DevSprint is **not launch-ready**. Production hosting, database connectivity, checkout, authenticated account flows, package delivery and refunds still require end-to-end verification.
+
+**Commercial security blocker:** this repository is public and paid workbook source has been committed to its Git history. CI no longer publishes customer ZIP artifacts, but that alone does not protect the source already in Git history. Do not take customer payments until the repository is made private or paid content is moved to a properly private source and the exposed Git history is remediated. GitHub's connected file-editing interface cannot change repository visibility or rewrite repository history.
 
 Run website QA and create the customer download from `website/`:
 

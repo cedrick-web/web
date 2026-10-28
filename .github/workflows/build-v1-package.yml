@@ -1,4 +1,4 @@
-name: Build DevSprint V1 Customer Package
+name: Verify DevSprint V1 Customer Package (No Public Artifact)
 
 on:
   push:
@@ -30,7 +30,7 @@ jobs:
         working-directory: website
         run: npm run check
 
-      - name: Build customer ZIP and SHA-256 checksum
+      - name: Build customer ZIP and SHA-256 checksum for validation only
         working-directory: website
         run: npm run package
 
@@ -39,12 +39,8 @@ jobs:
           cd products/javascript-toolkit/release
           sha256sum -c DEVSPRINT-JAVASCRIPT-PROBLEM-SOLVING-DSA-TOOLKIT-V1.zip.sha256
 
-      - name: Upload customer ZIP and checksum
-        uses: actions/upload-artifact@v4
-        with:
-          name: DevSprint-JavaScript-Problem-Solving-DSA-Toolkit-V1
-          path: |
-            products/javascript-toolkit/release/DEVSPRINT-JAVASCRIPT-PROBLEM-SOLVING-DSA-TOOLKIT-V1.zip
-            products/javascript-toolkit/release/DEVSPRINT-JAVASCRIPT-PROBLEM-SOLVING-DSA-TOOLKIT-V1.zip.sha256
-          if-no-files-found: error
-          retention-days: 30
+      # Commercial product packages must not be published as artifacts from a
+      # public source repository. Hosted delivery belongs in the payment provider.
+      - name: Remove generated customer package from ephemeral runner
+        if: always()
+        run: rm -rf products/javascript-toolkit/release

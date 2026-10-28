@@ -82,3 +82,10 @@ The API verifies the SHA-256 hash of the Payhip developer API key and the exact 
 5. Refund events with a smaller cumulative refund total than an already recorded event are treated as stale and cannot roll the refund record backwards.
 
 Payhip documents transaction IDs, product IDs, event types, the signature field, and that prices are in cents/pennies in its [official webhook documentation](https://help.payhip.com/article/115-webhooks). The additional endpoint secret is a DevSprint-side control to strengthen authenticity checks; it is not a Payhip-provided signature field.
+
+
+## Commercial content confidentiality blocker
+
+The source repository is currently public and contains paid workbook source in Git history. Treat this as a launch blocker. The package workflow builds the ZIP only for validation and deletes it from the runner; it does not upload the commercial ZIP as a GitHub Actions artifact. This prevents the workflow from creating another convenient public download, but does **not** remove already-committed source or past artifacts.
+
+Before accepting payment, the repository owner must make the repository private or separate commercial content into a private repository, then remediate the public Git history and review any previously generated workflow artifacts. The repository file connector used for code edits cannot change repository visibility, purge Git history across refs, or delete old action artifacts. Do not claim that this blocker is resolved until those account-level checks are complete.
