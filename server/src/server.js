@@ -48,6 +48,13 @@ function sameSecret(expected, provided) {
   return expectedBytes.length === providedBytes.length && timingSafeEqual(expectedBytes, providedBytes);
 }
 
+function sameEndpointSecret(expected, provided) {
+  if (typeof expected !== 'string' || expected.length < 32 || typeof provided !== 'string') return false;
+  const expectedBytes = Buffer.from(expected, 'utf8');
+  const providedBytes = Buffer.from(provided, 'utf8');
+  return expectedBytes.length === providedBytes.length && timingSafeEqual(expectedBytes, providedBytes);
+}
+
 export function createApp({ queryFn = defaultQuery, env = process.env } = {}) {
   const app = express();
   const allowedOrigins = String(env.CORS_ORIGIN || '').split(',').map(value => value.trim()).filter(Boolean);
@@ -180,8 +187,12 @@ export function createApp({ queryFn = defaultQuery, env = process.env } = {}) {
     try {
       const apiKey = String(env.PAYHIP_WEBHOOK_API_KEY || '');
       const configuredProductId = String(env.PAYHIP_PRODUCT_ID || '').trim();
-      if (!apiKey || !configuredProductId) {
+      const endpointSecret = String(env.PAYHIP_WEBHOOK_SECRET || '');
+      if (!apiKey || !configuredProductId || endpointSecret.length < 32) {
         return res.status(503).json({ error: 'Payment webhook is not fully configured' });
+      }
+      if (!sameEndpointSecret(endpointSecret, String(req.query?.secret || ''))) {
+        return res.status(401).json({ error: 'Invalid webhook endpoint secret' });
       }
 
       const expectedSignature = createHash('sha256').update(apiKey, 'utf8').digest('hex');
@@ -214,10 +225,15 @@ export function createApp({ queryFn = defaultQuery, env = process.env } = {}) {
         'SELECT id, name, price_minor, currency, status FROM products WHERE slug = ? LIMIT 1',
         [PRODUCT_SLUG]
       );
-      if (!products.length || products[0].status !== 'active') {
-        return res.status(503).json({ error: 'Configured DevSprint product is missing or inactive in the database' });
+      if (!products.length) {
+        return res.status(503).json({ error: 'Configured DevSprint product is missing in the database' });
       }
       const product = products[0];
+      // New sales require an active product; refunds must still be processed if the
+      // seller later archives the product, otherwise customers could retain access.
+      if (type === 'paid' && product.status !== 'active') {
+        return res.status(503).json({ error: 'Configured DevSprint product is inactive for new sales' });
+      }
       if (currency !== String(product.currency).toUpperCase()) {
         return res.status(400).json({ error: 'Payment currency does not match the configured DevSprint product' });
       }
@@ -279,6 +295,17 @@ export function createApp({ queryFn = defaultQuery, env = process.env } = {}) {
       const refundAmount = Number(req.body?.amount_refunded);
       if (!Number.isSafeInteger(refundAmount) || refundAmount <= 0 || refundAmount > Number(order.amount_minor)) {
         return res.status(400).json({ error: 'Invalid Payhip refund amount' });
+      }
+      const previousRefund = Math.max(0, Number(order.refunded_amount_minor || 0));
+      if (refundAmount < previousRefund) {
+        // Payhip may retry/deliver events out of order. Never roll refund state backwards.
+        return res.json({
+          ok: true,
+          ignored: true,
+          reason: 'stale_refund_event',
+          transactionId,
+          refundedAmountMinor: previousRefund,
+        });
       }
       const fullRefund = refundAmount >= Number(order.amount_minor);
       const nextStatus = fullRefund ? 'refunded' : 'partially_refunded';

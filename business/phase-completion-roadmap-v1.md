@@ -111,3 +111,13 @@ Before selling V1:
 - Build and inspect the customer archive from the private source pipeline, then run a test purchase and delivery.
 
 This requires private-repository/storage setup outside the current file-edit operations. Do not announce the product as protected or launch it until this blocker is resolved.
+
+
+## Authentication and payment verification follow-up — 2026-10-28
+
+- The login/register interface validates and normalizes email/name input, enforces the same UTF-8 password byte bounds as the server, prevents duplicate submits, clears password input when switching modes, reports network failures, and rejects malformed API responses.
+- The backend now requires three payment controls: the documented Payhip API-key SHA-256 signature, an exact configured `PAYHIP_PRODUCT_ID`, and a separate 32+ character `PAYHIP_WEBHOOK_SECRET` passed in the configured webhook endpoint URL.
+- Refunds continue to be processed after a product is archived, and a stale lower cumulative refund event cannot reverse a larger recorded refund.
+- Render Blueprint now declares `VITE_CHECKOUT_URL` and `PAYHIP_WEBHOOK_SECRET`.
+
+CI still needs to pass on the final change. After that, the real deployment still requires secrets/product IDs, database migration, frontend/API URLs, a genuine checkout and refund test, and private storage for paid curriculum content.
