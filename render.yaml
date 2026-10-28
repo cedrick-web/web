@@ -33,3 +33,7 @@ services:
         sync: false
       - key: CORS_ORIGIN
         sync: false
+      - key: PAYHIP_WEBHOOK_API_KEY
+        sync: false
+      - key: PAYHIP_PRODUCT_ID
+        sync: false

@@ -40,8 +40,9 @@ CREATE TABLE IF NOT EXISTS orders (
   provider VARCHAR(40) NOT NULL,
   provider_transaction_id VARCHAR(160) NULL,
   amount_minor INT UNSIGNED NOT NULL,
+  refunded_amount_minor INT UNSIGNED NOT NULL DEFAULT 0,
   currency CHAR(3) NOT NULL,
-  status ENUM('pending','paid','failed','refunded') NOT NULL DEFAULT 'pending',
+  status ENUM('pending','paid','partially_refunded','failed','refunded') NOT NULL DEFAULT 'pending',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
@@ -81,3 +82,9 @@ CREATE TABLE IF NOT EXISTS receipts (
   INDEX idx_receipts_email (customer_email),
   INDEX idx_receipts_issued_at (issued_at)
 );
+
+
+-- Stable V1 product record used by the signed Payhip webhook.
+INSERT INTO products (slug, name, price_minor, currency, status)
+VALUES ('javascript-problem-solving-dsa-toolkit-v1', 'JavaScript Problem-Solving & DSA Toolkit V1', 900, 'USD', 'active')
+ON DUPLICATE KEY UPDATE name = VALUES(name), price_minor = VALUES(price_minor), currency = VALUES(currency);

@@ -60,3 +60,12 @@ Expected result:
 ## 6. Domain policy
 
 No paid custom domain is required for V1. Use the free provider subdomains until the business generates enough revenue to justify a custom domain.
+
+
+## DevSprint V1 hardening updates
+
+- On a fresh database, apply the current `server/db/schema.sql`, which seeds the V1 product record.
+- If the database already exists, apply `server/db/migrations/003_payhip-product-refunds.sql` once after confirming earlier schema migrations have been applied.
+- Configure `PAYHIP_WEBHOOK_API_KEY` and the exact DevSprint product ID as `PAYHIP_PRODUCT_ID` in the backend host. Never put either value in the frontend or Git.
+- Configure `VITE_CHECKOUT_URL` only after the real Payhip product page is published and the hosted checkout has been tested. It must be an HTTPS URL.
+- Backend automated tests run without production credentials using a fake database. They verify API routes and Payhip event handling, but do not replace a live database smoke test.

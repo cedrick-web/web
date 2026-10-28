@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -29,6 +30,8 @@ const packageFiles = [
 ];
 
 fs.mkdirSync(releaseDir, { recursive: true });
+// Remove an old ZIP first so repeated builds cannot retain stale entries.
+fs.rmSync(archivePath, { force: true });
 const packageDir = fs.mkdtempSync(path.join(releaseDir, '.package-'));
 try {
   for (const [source, destination] of packageFiles) {
@@ -53,4 +56,13 @@ try {
   fs.rmSync(packageDir, { recursive: true, force: true });
 }
 
-console.log(`Customer package created: ${archivePath}`);
+const archive = fs.readFileSync(archivePath);
+if (archive.length < 1000 || archive[0] !== 0x50 || archive[1] !== 0x4b) {
+  throw new Error('Customer ZIP is missing, too small, or has an invalid ZIP signature.');
+}
+const sha256 = createHash('sha256').update(archive).digest('hex');
+const checksumPath = archivePath + '.sha256';
+fs.writeFileSync(checksumPath, sha256 + '  ' + path.basename(archivePath) + '\n', 'utf8');
+console.log('Customer package created: ' + archivePath);
+console.log('SHA-256 checksum created: ' + checksumPath);
+
