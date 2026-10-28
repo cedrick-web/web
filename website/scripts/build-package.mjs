@@ -62,7 +62,7 @@ if (archive.length < 1000 || archive[0] !== 0x50 || archive[1] !== 0x4b) {
 }
 const sha256 = createHash('sha256').update(archive).digest('hex');
 const checksumPath = archivePath + '.sha256';
-fs.writeFileSync(checksumPath, sha256 + '  ' + path.basename(archivePath) + '\\n', 'utf8');
+fs.writeFileSync(checksumPath, sha256 + '  ' + path.basename(archivePath) + '\n', 'utf8');
 console.log('Customer package created: ' + archivePath);
 console.log('SHA-256 checksum created: ' + checksumPath);
 
