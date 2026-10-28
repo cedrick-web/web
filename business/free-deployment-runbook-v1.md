@@ -14,23 +14,23 @@ Create a TiDB Cloud Starter instance on the free quota.
 
 Create the Render Blueprint from the repository's `render.yaml`.
 
-Set these backend environment variables in Render:
+The Render Blueprint now sets `VITE_API_URL=https://devsprint-api.onrender.com` and `CORS_ORIGIN=https://devsprint-web.onrender.com` for the default Render hostnames. It asks Render to generate `JWT_SECRET` and `PAYHIP_WEBHOOK_SECRET` automatically.
 
-- `DATABASE_URL`
-- `JWT_SECRET`
-- `CORS_ORIGIN` = the deployed frontend origin, including `https://`
-- `DB_SSL=true`
-- `DB_CONNECTION_LIMIT=5`
+The following values still require real account-specific data and must never be invented or committed:
+- `DATABASE_URL`: the actual TiDB/MySQL TLS connection string.
+- `PAYHIP_WEBHOOK_API_KEY`: the real Payhip developer API key.
+- `PAYHIP_PRODUCT_ID`: the exact product ID from the actual Payhip product.
+- `VITE_CHECKOUT_URL`: the real HTTPS Payhip product URL. The checkout card intentionally remains disabled until this exists.
 
-Do not commit any of those secrets to GitHub.
-
-After both services have deployed, set `VITE_API_URL` on the frontend and `CORS_ORIGIN` on the API to each other's exact HTTPS origins, then redeploy both services.
+Keep `DB_SSL=true` and `DB_CONNECTION_LIMIT=5`. Do not commit any credentials to GitHub. If you use a custom domain or Render assigns a different host, update the API's `CORS_ORIGIN` and frontend `VITE_API_URL` to the exact deployed HTTPS origins, then redeploy.
+ 
+The API now validates production configuration before starting and reports missing/invalid settings explicitly. Backend CI verifies those checks. A production deployment without a MySQL URL, valid JWT secret or exact HTTPS CORS origin will deliberately fail its startup check rather than appear healthy while account services are broken.
 
 ## 3. Frontend
 
-The blueprint builds `website` and publishes `website/dist`. Set `VITE_API_URL` on the `devsprint-web` static site to the deployed API origin, including `https://`.
+The Blueprint builds `website` with deterministic `npm ci` dependencies and publishes `website/dist`. The static site uses the default API hostname above; it does not require a manual `VITE_API_URL` entry when using the default Render URLs.
 
-Do not put secrets in `VITE_*` variables. This value is public and only identifies the API server.
+Do not put secrets in `VITE_*` variables. These values are bundled into public browser code.
 
 ## 4. First health test
 
