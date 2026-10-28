@@ -1,0 +1,46 @@
+name: Verify DevSprint V1 Customer Package (No Public Artifact)
+
+on:
+  push:
+    branches: ['devsprint-v1']
+  pull_request:
+    branches: ['devsprint-v1']
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+
+      - name: Install deterministic website dependencies
+        working-directory: website
+        run: npm ci
+
+      - name: Run website, curriculum and package QA
+        working-directory: website
+        run: npm run check
+
+      - name: Build customer ZIP and SHA-256 checksum for validation only
+        working-directory: website
+        run: npm run package
+
+      - name: Verify checksum
+        run: |
+          cd products/javascript-toolkit/release
+          sha256sum -c DEVSPRINT-JAVASCRIPT-PROBLEM-SOLVING-DSA-TOOLKIT-V1.zip.sha256
+
+      # Commercial product packages must not be published as artifacts from a
+      # public source repository. Hosted delivery belongs in the payment provider.
+      - name: Remove generated customer package from ephemeral runner
+        if: always()
+        run: rm -rf products/javascript-toolkit/release

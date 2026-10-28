@@ -1,0 +1,29 @@
+{
+  "name": "devsprint-web",
+  "private": true,
+  "version": "0.1.4",
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "qa": "node scripts/qa-challenges.mjs",
+    "qa:paid": "node scripts/qa-paid-challenges.mjs",
+    "qa:package": "node scripts/qa-package.mjs",
+    "package": "npm run qa:package && node scripts/build-package.mjs",
+    "check": "npm run qa && npm run qa:paid && npm run qa:modules && npm run qa:package && npm run qa:session && npm run qa:runner && npm run build",
+    "preview": "vite preview",
+    "qa:modules": "node scripts/qa-modules.mjs",
+    "qa:session": "node scripts/qa-session.mjs",
+    "qa:runner": "node scripts/qa-runner.mjs"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^6.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {}
+}
