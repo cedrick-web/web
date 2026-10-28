@@ -263,6 +263,16 @@ export function createApp({ queryFn = defaultQuery, env = process.env } = {}) {
       }
       const order = orders[0];
       if (order.status === 'refunded') {
+        // Retry cleanup even if an earlier webhook attempt updated the order but failed
+        // before receipt voiding or entitlement revocation completed.
+        await queryFn(
+          'UPDATE receipts r JOIN orders o ON o.id = r.order_id SET r.status = "voided" WHERE o.provider = ? AND o.provider_transaction_id = ?',
+          ['payhip', transactionId]
+        );
+        await queryFn(
+          'DELETE e FROM entitlements e JOIN orders o ON o.id = e.source_order_id WHERE o.provider = ? AND o.provider_transaction_id = ?',
+          ['payhip', transactionId]
+        );
         return res.json({ ok: true, type, transactionId, fullRefund: true, alreadyProcessed: true });
       }
 

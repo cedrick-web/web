@@ -311,3 +311,29 @@ test('Payhip paid events grant receipt and entitlement; partial/full refunds and
     assert.equal(db.state.entitlements.length, 0);
   }});
 });
+
+
+test('replayed full-refund event completes cleanup if prior processing left access behind', async () => {
+  await withApi({ run: async ({ base, db }) => {
+    db.state.orders.push({
+      id: 41, user_id: 11, product_id: 7, provider: 'payhip',
+      provider_transaction_id: 'txn-devsprint-001', amount_minor: 900,
+      refunded_amount_minor: 900, currency: 'USD', status: 'refunded',
+    });
+    db.state.receipts.push({
+      order_id: 41, receipt_number: 'DSR-existing', customer_name: 'Buyer',
+      customer_email: 'buyer@example.com', amount_minor: 900, currency: 'USD', status: 'issued',
+    });
+    db.state.entitlements.push({ user_id: 11, product_id: 7, source_order_id: 41 });
+
+    const result = await jsonRequest(base, '/api/payments/payhip/webhook', {
+      method: 'POST',
+      body: JSON.stringify(signedPayload({ type: 'refunded', amount_refunded: 900 })),
+    });
+
+    assert.equal(result.response.status, 200);
+    assert.equal(result.body.alreadyProcessed, true);
+    assert.equal(db.state.receipts[0].status, 'voided');
+    assert.equal(db.state.entitlements.length, 0);
+  }});
+});
