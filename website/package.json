@@ -13,10 +13,11 @@
     "qa:paid": "node scripts/qa-paid-challenges.mjs",
     "qa:package": "node scripts/qa-package.mjs",
     "package": "npm run qa:package && node scripts/build-package.mjs",
-    "check": "npm run qa && npm run qa:paid && npm run qa:modules && npm run qa:package && npm run qa:session && npm run build",
+    "check": "npm run qa && npm run qa:paid && npm run qa:modules && npm run qa:package && npm run qa:session && npm run qa:runner && npm run build",
     "preview": "vite preview",
     "qa:modules": "node scripts/qa-modules.mjs",
-    "qa:session": "node scripts/qa-session.mjs"
+    "qa:session": "node scripts/qa-session.mjs",
+    "qa:runner": "node scripts/qa-runner.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.4",
