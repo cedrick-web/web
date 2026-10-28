@@ -2,9 +2,9 @@ name: Verify DevSprint V1 Customer Package (No Public Artifact)
 
 on:
   push:
-    branches: ['devsprint-v1']
+    branches: ['main', 'devsprint-v1']
   pull_request:
-    branches: ['devsprint-v1']
+    branches: ['main', 'devsprint-v1']
   workflow_dispatch:
 
 jobs:
