@@ -19,7 +19,7 @@ Understand → Identify Input/Output → Break Down → Think → Algorithm → 
 - `marketing/` - acquisition and content system
 
 ## Status
-The website foundation and V1 curriculum are implemented, but DevSprint is **not launch-ready**. Production hosting, database connectivity, checkout, authenticated account flows, package delivery and refunds still require end-to-end verification.
+The website foundation and V1 curriculum are implemented, but DevSprint is **not launch-ready**. The Render Blueprint now supplies default API/CORS host settings and generated JWT/webhook secrets, and production startup validates required configuration. Actual database/provider credentials, checkout URL, source confidentiality remediation and end-to-end production verification remain launch gates.
 
 **Commercial security blocker:** this repository is public and paid workbook source has been committed to its Git history. CI no longer publishes customer ZIP artifacts, but that alone does not protect the source already in Git history. Do not take customer payments until the repository is made private or paid content is moved to a properly private source and the exposed Git history is remediated. GitHub's connected file-editing interface cannot change repository visibility or rewrite repository history.
 
